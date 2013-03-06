@@ -1,0 +1,41 @@
+.gallery img {
+	vertical-align: middle;
+	border: none;
+}
+.gallery-image {
+	position: relative;
+}
+.gallery-image .image-prev,
+.gallery-image .image-next {
+	position: absolute;
+	top: 0;
+	width: 50px;
+	height: 100%;
+	z-index: 1;
+}
+.gallery-image .image-prev {
+	left: 0;
+}
+.gallery-image .image-next {
+	right: 0;
+}
+.gallery-image .image-wrap {
+	overflow: hidden;
+	display: block;
+	height: 480px;
+	text-align: center;
+	text-decoration: none;
+	white-space: nowrap;
+}
+.gallery-image .image-wrap:after {
+	content: '';
+	display: inline-block;
+	vertical-align: middle;
+	height: 100%;
+}
+.gallery-image .image-wrap img {
+	max-height: 100%;
+}
+.gallery-image .image-current {
+	position: relative;
+}

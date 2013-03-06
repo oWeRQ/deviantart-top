@@ -1,0 +1,34 @@
+.thumbs-block {
+	position: relative;
+	width: 100%;
+}
+.thumbs-wrap {
+	position: relative;
+	overflow: hidden;
+}
+.thumbs-prev,
+.thumbs-next {
+	position: absolute;
+	top: 0;
+	width: 50px;
+	height: 100%;
+	z-index: 1;
+}
+.thumbs-prev {
+	left: 0;
+}
+.thumbs-next {
+	right: 0;
+}
+.thumbs-list {
+	list-style: none;
+	overflow: hidden;
+	position: relative;
+	margin: 0;
+	padding: 0;
+	width: 9000px;
+}
+.thumbs-list li {
+	position: relative;
+	float: left;
+}

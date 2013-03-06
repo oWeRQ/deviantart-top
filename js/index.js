@@ -1,0 +1,176 @@
+$(function(){
+	$('.checkAll').click(function(e){
+		e.preventDefault();
+
+		$(this).closest('.checkboxes').find('input[type=checkbox]').prop('checked', true);
+	});
+
+	$('.uncheckAll').click(function(e){
+		e.preventDefault();
+
+		$(this).closest('.checkboxes').find('input[type=checkbox]').prop('checked', false);
+	});
+
+	$('.clearInput').click(function(e){
+		e.preventDefault();
+
+		$(this).prev('input').val('');
+	});
+
+	$('.moreImages').click(function(e){
+		e.preventDefault();
+
+		var link = $(this),
+			imagesBlock = $(this).prev('.b-images'),
+			username = imagesBlock.data('username'),
+			imagesLoaded = imagesBlock.data('images-loaded');
+			imagesTotal = imagesBlock.data('images-total');
+			isLoading = imagesBlock.data('is-loading');
+
+		if (isLoading)
+			return;
+
+		//link.fadeOut();
+		link.text('Loading...');
+
+		imagesBlock.data('is-loading', true);
+
+		$.post(window.location.href, {
+			username: username,
+			imagesLoaded: imagesLoaded
+		}, function(data){
+			var count = data[0].images.length;
+
+			if (imagesLoaded+count >= imagesTotal)
+				link.remove();
+			else
+				//link.show().find('.count').text(data[0].total-imagesLoaded-count);
+				link.text('More images ('+(data[0].total-imagesLoaded-count)+')');
+
+			imagesBlock.data('images-loaded', imagesLoaded+count);
+
+			$.each(data[0].images, function(i, image){
+				var link = $('<a>', {
+					href: 'images/'+image.filename,
+					target: '_blank',
+					title: image.galleries.join(', '),
+					append: $('<img>', {
+						src: 'images/mythumbs/'+image.filename
+					}),
+					appendTo: imagesBlock
+				});
+
+				if (galleryModal.isOpen) {
+					gallery.appendImage({
+						thumb: link[0].firstChild.src,
+						middle: link[0].href,
+						big: link[0].href
+					});
+				}
+			});
+
+			gallery.thumbsSlider.setActive(gallery.thumbsSlider.idx);
+
+			imagesBlock.data('is-loading', null);
+		}, 'json');
+	});
+
+	var galleryModal = $.modalWindow({
+		onClose: function(){
+			$(window).off('resize', updateGalleryPos);
+		},
+		overlay: {
+			showAnimate: {
+				opacity: 0.8
+			}
+		}
+	});
+
+	var galleryEl = $(
+		'<div class="gallery">'+
+		'	<div class="gallery-image">'+
+		'		<a href="#" class="image-prev"></a>'+
+		'		<a href="#" class="image-next"></a>'+
+		'		<a class="image-wrap" target="_blank">'+
+		'			<img class="image-current" src="" alt="">'+
+		'			<span class="image-loader">Loading...</span>'+
+		'		</a>'+
+		'	</div><!-- .gallery-image -->'+
+		'	<div class="thumbs-block">'+
+		'		<a href="#" class="thumbs-prev"></a>'+
+		'		<a href="#" class="thumbs-next"></a>'+
+		'		<div class="thumbs-wrap">'+
+		'			<ul class="thumbs-list"></ul>'+
+		'		</div><!-- .thumbs-wrap -->'+
+		'	</div><!-- .thumbs-block -->'+
+		'</div><!-- .gallery -->'
+	).appendTo(galleryModal.content);
+
+	var imagesBlock = null;
+
+	var gallery = $.gallery({
+		thumbsSlider: {
+			paddingRight: 10,
+			onNextDisabled: function(){
+				imagesBlock.next('.moreImages').click();
+			}
+		}
+	}, galleryEl);
+
+	$(document).on('keypress', function(e){
+		if (e.keyCode === 37)
+			gallery.setActive(gallery.idx-1);
+		else if (e.keyCode === 39 || e.charCode === 32)
+			gallery.setActive(gallery.idx+1);
+	});
+
+	var updateGalleryPos = function(){
+		var ratio = 1.488,
+			imageHeight = window.innerHeight - 170,
+			imageWidth = imageHeight * ratio,
+			maxWidth = window.innerWidth - 60;
+
+		if (imageWidth > maxWidth) {
+			imageWidth = maxWidth;
+			imageHeight = imageWidth / ratio;
+		}
+
+		gallery.$el.css({width: imageWidth});
+		gallery.imageWrap.css({height: imageHeight});
+		gallery.thumbsSlider.setActive(gallery.thumbsSlider.idx);
+
+		galleryModal.windowCenter.updatePosition();
+	};
+
+	$('.b-images').on('click', 'a', function(e){
+		e.preventDefault();
+
+		galleryModal.open();
+
+		updateGalleryPos();
+		$(window).on('resize', updateGalleryPos);
+
+		var link = $(this);
+
+		imagesBlock = link.closest('.b-images');
+
+		var images = imagesBlock.children().map(function(){
+			return {
+				thumb: this.firstChild.src,
+				middle: this.href,
+				big: this.href
+			};
+		});
+
+		gallery.thumbsLinks.remove();
+		gallery.thumbsSlider.listEls.remove();
+		gallery.thumbsLinks = $();
+		gallery.thumbsSlider.listEls = $();
+
+		images.each(function(){
+			gallery.appendImage(this);
+		});
+
+		gallery.setActive(link.index());
+	});
+});
