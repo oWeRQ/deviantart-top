@@ -12,9 +12,11 @@ $.plugin('gallery', {
 		},
 		thumbsSlider: {},
 		showDuration: 400,
+		showLoadingTimeout: 400,
 		onActivate: $.noop
 	},
 	idx: 0,
+	loadingTimeout: null,
 	init: function(){
 		this.findAll(this.options.elements);
 		this.bindAll('thumbClick', 'imagePrev', 'imageNext', 'imageLoaded');
@@ -44,6 +46,7 @@ $.plugin('gallery', {
 		this.setActive(this.thumbsLinks.index(e.currentTarget));
 	},
 	imageLoaded: function(){
+		clearTimeout(this.loadingTimeout);
 		this.imageLoader.hide();
 		this.imageCurrent.fadeIn(this.showDuration);
 	},
@@ -73,16 +76,20 @@ $.plugin('gallery', {
 		else if (idx >= this.thumbsLinks.length)
 			idx = 0;
 
+		var that = this;
 		var link = this.thumbsLinks.eq(idx);
-		
+
 		link.addClass('active');
 		this.thumbsLinks.not(link).removeClass('active');
 
 		this.thumbsSlider.setActive(idx);
 
-		this.imageLoader.show();
 		this.imageWrap.prop('href', link.data('big'));
 		this.imageCurrent.hide().prop('src', link.prop('href'));
+
+		this.loadingTimeout = setTimeout(function(){
+			that.imageLoader.show();
+		}, this.options.showLoadingTimeout);
 
 		this.idx = idx;
 

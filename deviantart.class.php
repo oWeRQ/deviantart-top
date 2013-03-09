@@ -123,6 +123,7 @@ class Devianart
 		$instorageRegex = '#class="instorage"#';
 		$linkRegex = '#<a class="thumb[\s\w]*" href="(http://([^.]+)[^"]+)#';
 		$thumbRegex = '#data-src="(http://([^.]+)([^"]+))#';
+		$titleRegex = '#title="([^"]*)#';
 
 		$favs = array();
 
@@ -142,6 +143,8 @@ class Devianart
 					if (preg_match($linkRegex, $html, $linkMatch)
 						&& preg_match($thumbRegex, $html, $thumbMatch))
 					{
+						preg_match($titleRegex, $html, $titleMatch);
+
 						//$imageUrl = str_replace('/150/', '/', $thumbMatch[1]);
 						$thumbPath = parse_url($thumbMatch[1], PHP_URL_PATH);
 						$imageUrl = 'http://fc0'.rand(0, 9).'.deviantart.net'.preg_replace('#^(/\w+)/150/#', '\1/', $thumbPath);
@@ -150,6 +153,7 @@ class Devianart
 
 						$favs[] = array(
 							'id' => $id,
+							'title' => $titleMatch[1],
 							'page' => $linkMatch[1],
 							'author' => $linkMatch[2],
 							'thumb' => $thumbMatch[1],

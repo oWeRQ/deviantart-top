@@ -23,37 +23,51 @@
 	<form>
 		<h3>Collections</h3>
 		<div class="checkboxes">
-			<small>
-				<a href="#" class="checkAll">Check all</a>
-				| <a href="#" class="uncheckAll">Uncheck all</a>
-			</small>
+			<div>
+				<small>
+					<a href="#" class="checkAll">Check All</a>
+					| <a href="#" class="uncheckAll">Uncheck All</a>
+				</small>
+			</div>
 			<? foreach ($galleries as $gallery): ?>
+				<input class="exclude" type="checkbox" name="exclude[]" value="<?=$gallery['title']?>"
+					<? if (in_array($gallery['title'], $exclude_galleries)): ?>checked <? endif ?>>
 				<label>
 					<input type="checkbox" name="galleries[]" value="<?=$gallery['title']?>"
 						<? if (in_array($gallery['title'], $checked_galleries)): ?>checked <? endif ?>>
 					<?=$gallery['title']?>
-					<small>(<?=$gallery['approx_total']?>)</small>
+					<small>(<?=$gallery['approx_total']?>)</small>&nbsp;
 				</label>
 			<? endforeach ?>
 		</div>
+		<div class="row">
+			<label><input type="radio" name="condition" value="or" <?if($condition=='or'):?>checked<?endif?>> OR</label>
+			<label><input type="radio" name="condition" value="and" <?if($condition=='and'):?>checked<?endif?>> AND</label>
+			<label><input type="radio" name="condition" value="xor" <?if($condition=='xor'):?>checked<?endif?>> XOR</label>
+		</div>
 
 		<h3>Limits</h3>
-		<div class="row inline">
+		<div class="row b-inline">
 			<label>Favorites:</label>
 			<input type="text" name="minFavs" value="<?=$minFavs?>">
 			<a href="#" class="clearInput"></a>
 		</div>
-		<div class="row inline">
+		<div class="row b-inline">
 			<label>Deviations:</label>
 			<input type="text" name="minDevia" value="<?=$minDevia?>">
 			<a href="#" class="clearInput"></a>
 		</div>
-		<div class="row inline">
+		<div class="row b-inline">
 			<label>Top:</label>
 			<input type="text" name="topLimit" value="<?=$topLimit?>">
 			<a href="#" class="clearInput"></a>
 		</div>
-		<div class="row inline">
+		<div class="row b-inline">
+			<label>Page:</label>
+			<input type="text" name="page" value="<?=$page?>">
+			<a href="#" class="clearInput"></a>
+		</div>
+		<div class="row b-inline">
 			<label>Images:</label>
 			<input type="text" name="imagesLimit" value="<?=$imagesLimit?>">
 			<a href="#" class="clearInput"></a>
@@ -64,6 +78,12 @@
 			<input type="text" name="username" value="<?=$username?>" list="authorsList">
 			<a href="#" class="clearInput"></a>
 		</div>
+
+		<h3>Title</h3>
+		<div class="row">
+			<input type="text" name="title" value="<?=$title?>">
+			<a href="#" class="clearInput"></a>
+		</div>
 		
 		<div class="row actions">
 			<input type="submit" value="Show">
@@ -72,29 +92,19 @@
 </div>
 
 <div class="l-content">
-	<? foreach ($authors as $i => $author): ?>
-		<div class="b-author">
-			<h3>
-				<? if (count($authors) > 1): ?>
-					<span class="number"><?=$i+1?></span>
-				<? endif ?>
-				<a target="_blank" href="?<?=$limitsParams?>&amp;username=<?=$author['username']?>"><?=$author['username']?></a>
-				<small><?=$author['percent']?>%</small>
-				<sup><a target="_blank" href="http://<?=$author['username']?>.deviantart.com/gallery/">DA</a></sup>
-			</h3>
-			<div class="b-images" data-username="<?=$author['username']?>" data-images-total="<?=$author['total']?>" data-images-loaded="<?=count($author['images'])?>">
-			<?
-				foreach ($author['images'] as $image) { 
-					echo '<a href="images/'.$image['filename'].'" target="_blank" title="'.join(', ', $image['galleries']).'" data-id="'.$image['id'].'">';
-					echo '<img src="images/mythumbs/'.$image['filename'].'">';
-					echo '</a>';
-				}
-			?></div>
-			<? if(count($author['images']) < $author['total']): ?>
-				<a href="#" class="moreImages">More images (<span class="count"><?=$author['total']-count($author['images'])?></span>)</a>
-			<? endif ?>
-		</div>
-	<? endforeach ?>
+	<? if ($top && $page > 1): ?>
+		<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=$title?>&amp;page=<?=$page-1?>" class="m-button showPrev">Show Prev</a>
+	<? endif ?>
+
+	<div class="authors-list">
+		<? foreach ($authors as $i => $author): ?>
+			<? require 'index.item.tpl.php'; ?>
+		<? endforeach ?>
+	</div>
+
+	<? if (count($authors) === $topLimit): ?>
+		<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=$title?>&amp;page=<?=$page+1?>" class="m-button showMore">Show More</a>
+	<? endif ?>
 </div>
 
 <datalist id="authorsList">

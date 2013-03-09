@@ -2,13 +2,13 @@ $(function(){
 	$('.checkAll').click(function(e){
 		e.preventDefault();
 
-		$(this).closest('.checkboxes').find('input[type=checkbox]').prop('checked', true);
+		$(this).closest('.checkboxes').find('input[type=checkbox]:not(.exclude)').prop('checked', true);
 	});
 
 	$('.uncheckAll').click(function(e){
 		e.preventDefault();
 
-		$(this).closest('.checkboxes').find('input[type=checkbox]').prop('checked', false);
+		$(this).closest('.checkboxes').find('input[type=checkbox]:not(.exclude)').prop('checked', false);
 	});
 
 	$('.clearInput').click(function(e){
@@ -17,7 +17,7 @@ $(function(){
 		$(this).prev('input').val('');
 	});
 
-	$('.moreImages').click(function(e){
+	$('.authors-list').on('click', '.moreImages', function(e){
 		e.preventDefault();
 
 		var link = $(this),
@@ -30,7 +30,6 @@ $(function(){
 		if (isLoading)
 			return;
 
-		//link.fadeOut();
 		link.text('Loading...');
 
 		imagesBlock.data('is-loading', true);
@@ -39,17 +38,17 @@ $(function(){
 			username: username,
 			imagesLoaded: imagesLoaded
 		}, function(data){
-			var count = data[0].images.length;
+			var author = data.authors[0],
+				count = author.images.length;
 
 			if (imagesLoaded+count >= imagesTotal)
 				link.remove();
 			else
-				//link.show().find('.count').text(data[0].total-imagesLoaded-count);
-				link.text('More images ('+(data[0].total-imagesLoaded-count)+')');
+				link.text('More images ('+(author.total-imagesLoaded-count)+')');
 
 			imagesBlock.data('images-loaded', imagesLoaded+count);
 
-			$.each(data[0].images, function(i, image){
+			$.each(author.images, function(i, image){
 				var link = $('<a>', {
 					href: 'images/'+image.filename,
 					target: '_blank',
@@ -62,7 +61,7 @@ $(function(){
 
 				if (galleryModal.isOpen) {
 					gallery.appendImage({
-						thumb: link[0].firstChild.src,
+						thumb: link[0].firstElementChild.src,
 						middle: link[0].href,
 						big: link[0].href
 					});
@@ -75,14 +74,84 @@ $(function(){
 		}, 'json');
 	});
 
+	var scrollShowMoreEnabled = false;
+	var scrollShowMore = function(e){
+		if (window.scrollY >= window.scrollMaxY-300 && showMore.is(':visible')) {
+			$(window).off('scroll', scrollShowMore);
+			showMore.click();
+		}
+	};
+
+	var showPrev = $('.showPrev').click(function(e){
+		e.preventDefault();
+
+		var link = $(this),
+			url = this.href,
+			authorsList = $('.authors-list');
+
+		if (link.hasClass('disabled'))
+			return;
+
+		link.addClass('disabled');
+
+		$.getJSON(url, function(data){
+			history.replaceState({}, '', url);
+			if (data.page === 1)
+				link.hide();
+			else
+				link.prop('href', data.prevUrl).removeClass('disabled');
+
+			var winScrollX = window.scrollX,
+				winScrollY = window.scrollY;
+
+			var authorsFragment = $(document.createDocumentFragment());
+			$.each(data.authorsHtml, function(i, authorHtml){
+				authorsFragment.append(authorHtml);
+			});
+			authorsList.prepend(authorsFragment);
+
+			window.scrollTo(winScrollX, winScrollY);
+		});
+	});
+
+	var showMore = $('.showMore').click(function(e){
+		e.preventDefault();
+
+		var link = $(this),
+			url = this.href,
+			authorsList = $('.authors-list');
+
+		if (link.hasClass('disabled'))
+			return;
+
+		link.addClass('disabled');
+
+		$.getJSON(url, function(data){
+			history.pushState({}, 'page '+data.page, url);
+			link.prop('href', data.nextUrl).removeClass('disabled');
+
+			var winScrollX = window.scrollX,
+				winScrollY = window.scrollY;
+
+			var authorsFragment = $(document.createDocumentFragment());
+			$.each(data.authorsHtml, function(i, authorHtml){
+				authorsFragment.append(authorHtml);
+			});
+			authorsList.append(authorsFragment);
+
+			window.scrollTo(winScrollX, winScrollY);
+			$(window).on('scroll', scrollShowMore);
+		});
+
+		/*if (!scrollShowMoreEnabled) {
+			scrollShowMoreEnabled = true;
+			$(window).on('scroll', scrollShowMore);
+		}*/
+	});
+
 	var galleryModal = $.modalWindow({
 		onClose: function(){
 			$(window).off('resize', updateGalleryPos);
-		},
-		overlay: {
-			showAnimate: {
-				opacity: 0.8
-			}
 		}
 	});
 
@@ -125,7 +194,7 @@ $(function(){
 	});
 
 	var updateGalleryPos = function(){
-		var ratio = 1.488,
+		var ratio = 1.5,
 			imageHeight = window.innerHeight - 170,
 			imageWidth = imageHeight * ratio,
 			maxWidth = window.innerWidth - 60;
@@ -142,7 +211,7 @@ $(function(){
 		galleryModal.windowCenter.updatePosition();
 	};
 
-	$('.b-images').on('click', 'a', function(e){
+	$('.authors-list').on('click', '.b-images a', function(e){
 		e.preventDefault();
 
 		galleryModal.open();
@@ -156,7 +225,7 @@ $(function(){
 
 		var images = imagesBlock.children().map(function(){
 			return {
-				thumb: this.firstChild.src,
+				thumb: this.firstElementChild.src,
 				middle: this.href,
 				big: this.href
 			};

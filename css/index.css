@@ -14,8 +14,13 @@ input[type=text] {
 	box-sizing: border-box;
 	width: 100%;
 }
+input[type=radio] {
+	margin: 0 0 0 4px;
+}
+.m-button,
 input[type=submit] {
-	padding: 4px;
+	display: inline-block;
+	padding: 4px 12px;
 	color: #444;
 	background: #ededed;
 	background: linear-gradient(to bottom, #ededed, #ededed 38%, #dedede);
@@ -23,30 +28,42 @@ input[type=submit] {
 	border-radius: 2px;
 	box-shadow: 0 1px 0 rgba(0, 0, 0, .08), inset 0 1px 2px rgba(255, 255, 255, .75);
 	text-shadow: 0 1px 0 #f0f0f0;
+	cursor: default;
 }
+.m-button:hover,
 input[type=submit]:hover {
 	color: black;
 	background-image: linear-gradient(to bottom, #f0f0f0, #f0f0f0 38%, #e0e0e0);
 	border-color: rgba(0, 0, 0, .3);
-	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12), inset 0 1px 2px rgba(255, 255, 255, 0.95);
+	box-shadow: 0 1px 0 rgba(0, 0, 0, .12), inset 0 1px 2px rgba(255, 255, 255, .95);
 }
+.m-button:active,
 input[type=submit]:active {
 	background-image: linear-gradient(to bottom, #e7e7e7, #e7e7e7 38%, #d7d7d7);
 	box-shadow: none;
 	text-shadow: none;
 }
+.m-button:focus,
 input[type=submit]:focus {
 	transition: border-color 200ms;
 	border-color: rgb(77, 144, 254);
 	outline: none;
 }
+.m-button.disabled,
+input[type=submit].disabled {
+	color: #aaa;
+	background-image: -webkit-linear-gradient(#f1f1f1, #f1f1f1 38%, #e6e6e6);
+	background-image: linear-gradient(to bottom, #f1f1f1, #f1f1f1 38%, #e6e6e6);
+	border-color: rgba(80, 80, 80, .2);
+	box-shadow: 0 1px 0 rgba(80, 80, 80, .08), inset 0 1px 2px rgba(255, 255, 255, .75);
+}
 .clearInput {
 	display: inline-block;
-	vertical-align: middle;
+	vertical-align: top;
 	width: 18px;
-	height: 18px;
-	margin-left: -22px;
-	margin-right: -22px;
+	height: 22px;
+	line-height: 24px;
+	margin-left: -18px;
 	color: #ccc;
 }
 .clearInput:before {
@@ -70,14 +87,15 @@ input[type=submit]:focus {
 	margin: 8px 0;
 	white-space: nowrap;
 }
-.row.inline {
+.row.b-inline {
 	margin-right: -4px;
 }
-.row.inline label,
-.row.inline input[type=text] {
+.row.b-inline label,
+.row.b-inline input[type=text] {
 	display: inline-block;
-	width: 73px;
+	width: 75px;
 }
+
 .l-sidebar {
 	position: fixed;
 	left: 0;
@@ -96,8 +114,31 @@ input[type=submit]:focus {
 .l-sidebar input[type=submit] {
 	width: 100%;
 }
+.l-sidebar input.exclude {
+	float: right;
+	margin: 5px;
+}
+.l-sidebar input.exclude:checked + label {
+	color: #666;
+	text-decoration: line-through;
+}
+.l-sidebar input.exclude:checked + label input {
+	opacity: .4;
+}
 .l-content {
 	margin-left: 210px;
+}
+.b-inline {
+	letter-spacing: -0.31em; /* webkit: collapse white-space between units */
+	*letter-spacing: normal; /* reset IE < 8 */
+	word-spacing: -0.43em; /* IE < 8 && gecko: collapse white-space between units */
+}
+.b-inline > * {
+	display: inline-block;
+	*display: inline; *zoom: 1; /* IE < 8: fake inline-block */
+	letter-spacing: normal;
+	word-spacing: normal;
+	vertical-align: top;
 }
 .b-author {
 	padding-bottom: 20px;
@@ -106,7 +147,7 @@ input[type=submit]:focus {
 .b-author .number {
 	display: inline-block;
 	margin-right: 4px;
-	width: 30px;
+	min-width: 30px;
 	line-height: 30px;
 	text-align: center;
 	background: #ddd;
@@ -117,15 +158,15 @@ input[type=submit]:focus {
 }
 .b-images > * {
 	position: relative;
-	display: inline-block;
 	margin-right: 3px;
+	margin-bottom: 3px;
 }
 .b-images img {
 	display: block;
 	height: 120px;
 }
 .b-images > *:after {
-	content: attr(title);
+	content: attr(data-galleries);
 	display: block;
 	position: absolute;
 	padding: 4px 8px;
@@ -155,6 +196,10 @@ input[type=submit]:focus {
 }
 .moreImages:hover {
 	box-shadow: none;
+}
+
+.showMore {
+	margin: 12px 0;
 }
 
 .modal-wrap {
