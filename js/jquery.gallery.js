@@ -87,6 +87,7 @@ $.plugin('gallery', {
 		this.imageWrap.prop('href', link.data('big'));
 		this.imageCurrent.hide().prop('src', link.prop('href'));
 
+		that.imageLoader.hide();
 		this.loadingTimeout = setTimeout(function(){
 			that.imageLoader.show();
 		}, this.options.showLoadingTimeout);

@@ -69,7 +69,7 @@ file_put_contents('thumbs.txt', implode("\n", $newThumbs));
 file_put_contents('images_with_galleries.json', json_encode(array_values($images)));
 
 foreach ($images as $image) {
-	$images_by_author[$image['author']][] = $image;
+	$images_by_author[$image['author']][$image['id']] = $image;
 }
 
 file_put_contents('images_by_author.json', json_encode($images_by_author));

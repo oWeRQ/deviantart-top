@@ -3,6 +3,9 @@
 class Devianart
 {
 	protected $oEmbedUrl = 'http://backend.deviantart.com/oembed?url=';
+	
+	public $user_id = null;
+	public $ui = null;
 
 	public static $cache_time = 259200; //3600*24*3
 	//public static $cache_time = 604800; //3600*24*7
@@ -41,7 +44,7 @@ class Devianart
 		return $counts;
 	}
 
-	function sendCall($callObj, $callMethod, $callParams, $username = 'my', $try = 3)
+	function sendCall($callObj, $callMethod, $callParams, $username = 'my', $method = 'get', $try = 3)
 	{
 		$callStr = '"'.$callObj.'","'.$callMethod.'",["'.join('","', $callParams).'"]';
 
@@ -57,20 +60,32 @@ class Devianart
 			't' => 'json',
 		);
 
+		if ($this->ui || $this->ui = $this->getUserToken())
+			$params['ui'] = $this->ui;
+
 		$parts['query'] = http_build_query($params);
 
-		$url = $parts['scheme'].'://'.$parts['host'].$parts['path'].'?'.$parts['query'];
-
-		$data_file = 'cache/'.md5($url).'.json';
-		if (file_exists($data_file) && time()-filemtime($data_file) < self::$cache_time) {
+		if ($method === 'get') {
+			$url = $parts['scheme'].'://'.$parts['host'].$parts['path'].'?'.$parts['query'];
+			$data_file = 'cache/'.md5($url).'.json';
+		} else {
+			$url = $parts['scheme'].'://'.$parts['host'].$parts['path'];
+		}
+		
+		if ($method === 'get' && file_exists($data_file) && time()-filemtime($data_file) < self::$cache_time) {
 			if (!self::$silent)
 				echo "read: $data_file (".date('Y-m-d', filemtime($data_file)).")\n";
 			$data = file_get_contents($data_file);
 		} else {
 			if (!self::$silent)
 				echo "fetch: $data_file\n";
-			$data = file_get_contents($url);
-			file_put_contents($data_file, $data);
+
+			if ($method === 'get') {
+				$data = file_get_contents($url);
+				file_put_contents($data_file, $data);
+			} elseif ($method === 'post') {
+				$data = $this->sendPost($url, $params);
+			}
 		}
 
 		$json = json_decode($data, true);
@@ -79,7 +94,7 @@ class Devianart
 			if (--$try > 0) {
 				echo "try: $try\n";
 				unlink($data_file);
-				return $this->sendCall($callObj, $callMethod, $callParams, $username, $try);
+				return $this->sendCall($callObj, $callMethod, $callParams, $username, $method, $try);
 			}
 
 			echo "error: ".$json['DiFi']['response']['error']."\n";
@@ -87,6 +102,32 @@ class Devianart
 		}
 
 		return $json['DiFi']['response']['calls'][0]['response']['content'];
+	}
+
+	function sendPost($url, $data)
+	{
+		$ch = curl_init(); 
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_FAILONERROR, 1); 
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+		curl_setopt($ch, CURLOPT_POST, 1); 
+		curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+		curl_setopt($ch, CURLOPT_COOKIEJAR, '.cookie');
+		curl_setopt($ch, CURLOPT_COOKIEFILE, '.cookie');
+		$result = curl_exec($ch);
+		curl_close($ch);  
+		return $result;
+	}
+
+	function getUserToken()
+	{
+		$cookie = file_get_contents('.cookie');
+		if (preg_match('/userinfo\s+([_%\w]+)/', $cookie, $match)) {
+			return urldecode($match[1]);
+		}
+		return false;
 	}
 
 	function getFavGalleries($user_id, $type = 21)
@@ -97,6 +138,37 @@ class Devianart
 			$type,
 			1,
 		));
+	}
+
+	function addFavGalleries($user_id, $gallery_id, $image_id, $position = 0)
+	{
+		return $this->sendCall("Aggregations", "add_resource", array(
+			$user_id,
+			"551235953",
+			21,
+			$gallery_id,
+			1,
+			$image_id,
+			$position,
+		), 'owerq', 'post');
+	}
+
+	function toggleFavourite($image_id)
+	{
+		return $this->sendCall("Deviation", "Favourite", array(
+			$image_id,
+		), 'owerq', 'post');
+	}
+
+	function removeFavGalleries($user_id, $gallery_id, $image_id)
+	{
+		return $this->sendCall("Gallections", "remove_resource", array(
+			$user_id,
+			21,
+			$gallery_id,
+			1,
+			$image_id,
+		), 'owerq', 'post');
 	}
 
 	function getFavPage($user, $offset = 0)
@@ -166,7 +238,7 @@ class Devianart
 					{
 						echo "\nERROR PARSE:";
 						echo "\n============\n";
-						var_dump($html);
+						echo $html;
 						echo "\n";
 					}
 				}

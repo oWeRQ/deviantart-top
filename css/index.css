@@ -5,6 +5,10 @@ a {
 	text-decoration: none;
 	color: #49e;
 }
+h3 {
+	margin: 8px 0;
+	color: #666;
+}
 input {
 	font: inherit;
 	vertical-align: middle;
@@ -76,12 +80,27 @@ input[type=submit].disabled {
 	margin-bottom: 10px;
 }
 .checkboxes label {
+	overflow: hidden;
 	display: block;
 	padding: 2px 0;
 }
 .checkboxes label:hover {
 	background: #fff;
 	border-radius: 2px;
+}
+.checkboxes .actions {
+	float: right;
+	margin-left: 3px;
+	font-size: 0.8em;
+	color: #666;
+}
+.checkboxes .actions a {
+	display: inline-block;
+	padding: 6px 6px 5px;
+	background: #eee;
+}
+.checkboxes .actions a:hover {
+	background: #ddd;
 }
 .row {
 	margin: 8px 0;
@@ -109,7 +128,6 @@ input[type=submit].disabled {
 }
 .l-sidebar h3 {
 	margin: 16px 0 8px;
-	color: #666;
 }
 .l-sidebar input[type=submit] {
 	width: 100%;
@@ -155,6 +173,8 @@ input[type=submit].disabled {
 }
 .b-images {
 	display: inline;
+	margin: 0;
+	padding: 0;
 }
 .b-images > * {
 	position: relative;
@@ -165,7 +185,17 @@ input[type=submit].disabled {
 	display: block;
 	height: 120px;
 }
-.b-images > *:after {
+.b-images .selected {
+	background: #36c;
+	outline: 3px solid #36c;
+}
+.b-images .selected img {
+	opacity: .7;
+}
+.b-images .showInGallery {
+	display: block;
+}
+.b-images .showInGallery:after {
 	content: attr(data-galleries);
 	display: block;
 	position: absolute;
@@ -175,10 +205,30 @@ input[type=submit].disabled {
 	right: 0;
 	font-size: 12px;
 	color: white;
-	background: rgba(0, 0, 0, .5);
+	background: rgba(0,0,0,.5);
 	opacity: 0;
 }
-.b-images > *:hover:after {
+.b-images li:hover .showInGallery:after {
+	transition: opacity 200ms;
+	opacity: 1;
+}
+.b-images .update {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 24px;
+	height: 24px;
+	line-height: 24px;
+	font-size: 18px;
+	text-align: center;
+	color: white;
+	background: rgba(0,0,0,.5);
+	opacity: 0;
+}
+.b-images .update:after {
+	content: '\270E';
+}
+.b-images li:hover .update {
 	transition: opacity 200ms;
 	opacity: 1;
 }
@@ -222,8 +272,64 @@ input[type=submit].disabled {
 	height: 108px;
 }
 .modal-window .gallery .thumbs-block {
-	background: white;
+	background: transparent;
 }
 .modal-window .gallery .thumbs-list {
 	width: 30000px;
+}
+.modal-window .gallery .thumbs-list a img {
+	border-color: #888;
+	border-radius: 2px;
+}
+.modal-window .gallery .thumbs-list a:hover img {
+	border-color: #bbb;
+}
+.modal-window .gallery .thumbs-list a.active img {
+	border-color: white;
+}
+.modal-window .gallery .thumbs-list a.active:before {
+	border-bottom-color: white;
+}
+
+.updateControl {
+	display: none;
+	position: absolute;
+	margin-top: 3px;
+	padding: 8px 16px;
+	min-width: 200px;
+	background: white;
+	border: 1px solid #999;
+	box-shadow: 0 1px 5px rgba(0,0,0,.5);
+}
+.updateControl:before {
+	content: '';
+	position: absolute;
+	top: -18px;
+	left: 4px;
+	border: 9px solid transparent;
+	border-bottom-color: #999; 
+}
+.updateControl:after {
+	content: '';
+	position: absolute;
+	top: -16px;
+	left: 5px;
+	border: 8px solid transparent;
+	border-bottom-color: white; 
+}
+.updateControl .closeButton {
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	width: 16px;
+	height: 16px;
+	line-height: 16px;
+	text-align: center;
+	color: #999;
+}
+.updateControl .closeButton:after {
+	content: '\2716';
+}
+.updateControl .checkboxes label:hover {
+	background: #eee;
 }

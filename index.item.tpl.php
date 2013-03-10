@@ -5,13 +5,16 @@
 		<small><?=$author['percent']?>%</small>
 		<sup><a target="_blank" href="http://<?=$author['username']?>.deviantart.com/gallery/">DA</a></sup>
 	</h3>
-	<div class="b-inline b-images" data-username="<?=$author['username']?>" data-images-total="<?=$author['total']?>" data-images-loaded="<?=count($author['images'])?>">
+	<ul class="b-inline b-images" data-username="<?=$author['username']?>" data-images-total="<?=$author['total']?>" data-images-loaded="<?=count($author['images'])?>">
 		<? foreach ($author['images'] as $image): ?>
-			<a href="images/<?=$image['filename']?>" target="_blank" title="<?=$image['title']?>" data-galleries="<?=join(', ', $image['galleries'])?>" data-id="<?=$image['id']?>">
-				<img src="images/mythumbs/<?=$image['filename']?>">
-			</a>
+			<li>
+				<a id="image_<?=$image['id']?>" class="showInGallery" href="images/<?=$image['filename']?>" target="_blank" title="<?=$image['title']?>" data-galleries="<?=join(', ', $image['galleries'])?>" data-id="<?=$image['id']?>">
+					<img src="images/mythumbs/<?=$image['filename']?>">
+				</a>
+				<a class="update" href="#"></a>
+			</li>
 		<? endforeach ?>
-	</div>
+	</ul>
 	<? if(count($author['images']) < $author['total']): ?>
 		<a href="#" class="moreImages">More images (<span class="count"><?=$author['total']-count($author['images'])?></span>)</a>
 	<? endif ?>

@@ -50,12 +50,25 @@ $(function(){
 
 			$.each(author.images, function(i, image){
 				var link = $('<a>', {
+					id: 'image_'+image.id,
+					'class': 'showInGallery',
 					href: 'images/'+image.filename,
 					target: '_blank',
-					title: image.galleries.join(', '),
+					title: image.title,
+					'data-id': image.id,
+					'data-galleries': image.galleries.join(', '),
 					append: $('<img>', {
 						src: 'images/mythumbs/'+image.filename
-					}),
+					})
+				});
+				var li = $('<li>', {
+					append: [
+						link,
+						$('<a>', {
+							'class': 'update',
+							href: '#'
+						})
+					],
 					appendTo: imagesBlock
 				});
 
@@ -187,10 +200,18 @@ $(function(){
 	}, galleryEl);
 
 	$(document).on('keypress', function(e){
-		if (e.keyCode === 37)
-			gallery.setActive(gallery.idx-1);
-		else if (e.keyCode === 39 || e.charCode === 32)
-			gallery.setActive(gallery.idx+1);
+		if (galleryModal.isOpen) {
+			e.preventDefault();
+
+			if (e.keyCode === 37) // left
+				gallery.setActive(gallery.idx-1);
+			else if (e.keyCode === 39 || e.which === 32) // right or space
+				gallery.setActive(gallery.idx+1);
+			else if (e.which === 43) // plus
+				imagesBlock.find('.showInGallery').eq(gallery.idx).addClass('selected');
+			else if (e.which === 45) // minus
+				imagesBlock.find('.showInGallery').eq(gallery.idx).removeClass('selected');
+		}
 	});
 
 	var updateGalleryPos = function(){
@@ -211,23 +232,47 @@ $(function(){
 		galleryModal.windowCenter.updatePosition();
 	};
 
-	$('.authors-list').on('click', '.b-images a', function(e){
+	$('.authors-list').on('click', '.showInGallery', function(e){
 		e.preventDefault();
+
+		var link = $(this),
+			idx = link.closest('li').index();
+
+		imagesBlock = link.closest('.b-images');
+
+		if (e.ctrlKey) {
+			link.toggleClass('selected');
+			imagesBlock.data('last-selected', idx);
+
+			return;
+		} else if (e.shiftKey) {
+			var i,
+				lastSelected = parseInt(imagesBlock.data('last-selected')),
+				galleryLinks = imagesBlock.find('.showInGallery'),
+				checked = galleryLinks.eq(lastSelected).hasClass('selected');
+
+			if (idx > lastSelected) {
+				for (i = idx; i >= lastSelected; i--)
+					galleryLinks.eq(i).toggleClass('selected', checked);
+			} else {
+				for (i = idx; i <= lastSelected; i++)
+					galleryLinks.eq(i).toggleClass('selected', checked);
+			}
+
+			return;
+		}
 
 		galleryModal.open();
 
 		updateGalleryPos();
 		$(window).on('resize', updateGalleryPos);
 
-		var link = $(this);
-
-		imagesBlock = link.closest('.b-images');
-
 		var images = imagesBlock.children().map(function(){
+			var link = this.firstElementChild;
 			return {
-				thumb: this.firstElementChild.src,
-				middle: this.href,
-				big: this.href
+				thumb: link.firstElementChild.src,
+				middle: link.href,
+				big: link.href
 			};
 		});
 
@@ -240,6 +285,108 @@ $(function(){
 			gallery.appendImage(this);
 		});
 
-		gallery.setActive(link.index());
+		gallery.setActive(idx);
+	});
+
+	var updateControl = {
+		el: $('.updateControl'),
+		init: function(){
+			var that = this;
+
+			this.form = this.el.find('form:first');
+			this.galleries = this.el.find('input[name="galleries[]"]');
+
+			this.el.find('.closeControl').click(function(e){
+				e.preventDefault();
+				that.el.hide();
+			});
+			
+			this.form.submit(function(e){
+				e.preventDefault();
+
+				$.post(that.form.attr('action'), that.form.serialize(), function(data){
+					var galleries = data.image.galleries.join(', ');
+					$('#image_'+data.image.id).data('galleries', galleries).attr('data-galleries', galleries);
+				}, 'json');
+
+				that.el.hide();
+			});
+
+			this.el.find('.actionDeleteAll').click(function(e){
+				e.preventDefault();
+
+				var link = $(this);
+
+				if (confirm('Delete all selected?')) {
+					var params = {
+						action: 'deleteFavorites',
+						username: that.form[0].username.value,
+						images: that.getSelected()
+					};
+
+					$.post(that.form.attr('action'), params, function(data){
+						$.each(data.images, function(i, image){
+							$('#image_'+image.id).closest('li').remove();
+						});
+					}, 'json');
+
+					that.el.hide();
+				}
+			});
+
+			this.el.find('.actionAddAll, .actionRemoveAll').click(function(e){
+				e.preventDefault();
+
+				var link = $(this);
+
+				var params = {
+					action: link.data('action'),
+					username: that.form[0].username.value,
+					gallery: link.data('gallery-id'),
+					images: that.getSelected()
+				};
+
+				$.post(that.form.attr('action'), params, function(data){
+					$.each(data.images, function(i, image){
+						var galleries = image.galleries.join(', ');
+						$('#image_'+image.id).data('galleries', galleries).attr('data-galleries', galleries);
+					});
+				}, 'json');
+			});
+		},
+		show: function(rel){
+			var linkPos = rel.offset();
+			this.el.css({
+				left: linkPos.left,
+				top: linkPos.top+rel.height()
+			}).show();
+		},
+		getSelected: function(){
+			return this.imagesBlock.find('.selected').map(function(){
+				return $(this).data('id');
+			}).toArray();
+		}
+	};
+	updateControl.init();
+
+	$('.authors-list').on('click', '.update', function(e){
+		e.preventDefault();
+
+		updateControl.link = $(this);
+		updateControl.imagesBlock = updateControl.link.closest('.b-images');
+
+		var imageLink = updateControl.link.prev('.showInGallery');
+		var imageGalleries = imageLink.data('galleries').split(', ');
+
+		//imageLink.addClass('selected');
+
+		updateControl.form[0].username.value = updateControl.imagesBlock.data('username');
+		updateControl.form[0].image_id.value = imageLink.data('id');
+
+		updateControl.galleries.each(function(){
+			this.checked = (imageGalleries.indexOf(this.value) !== -1);
+		});
+
+		updateControl.show(imageLink);
 	});
 });
