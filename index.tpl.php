@@ -113,6 +113,16 @@
 	<? endforeach ?>
 </datalist>
 
+<div class="moveMenu">
+	<ul>
+		<? foreach ($galleries as $gallery): ?>
+			<li>
+				<a href="#" data-id="<?=$gallery['galleryid']?>" data-title="<?=$gallery['title']?>"><?=$gallery['title']?></a>
+			</li>
+		<? endforeach ?>
+	</ul>
+</div>
+
 <div class="updateControl">
 	<a href="#" class="closeControl closeButton"></a>
 	<form action="updateImage.php" method="post">
@@ -120,15 +130,9 @@
 		<input type="hidden" name="username" value="">
 		<input type="hidden" name="image_id" value="">
 
-		<a href="#" class="actionDeleteAll">Delete Selected</a>
-
 		<h3>Collections</h3>
 		<div class="checkboxes">
 			<? foreach ($galleries as $gallery): ?>
-				<span class="actions">
-					<a href="#" class="actionAddAll" data-action="addGallery" data-gallery-id="<?=$gallery['galleryid']?>">Add</a>
-					<a href="#" class="actionRemoveAll" data-action="removeGallery" data-gallery-id="<?=$gallery['galleryid']?>">Remove</a>
-				</span>
 				<label>
 					<input type="checkbox" name="galleries[]" value="<?=$gallery['title']?>">
 					<?=$gallery['title']?>

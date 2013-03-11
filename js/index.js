@@ -290,6 +290,8 @@ $(function(){
 
 	var updateControl = {
 		el: $('.updateControl'),
+		activeLink: null,
+		imagesBlock: null,
 		init: function(){
 			var that = this;
 
@@ -311,54 +313,33 @@ $(function(){
 
 				that.el.hide();
 			});
-
-			this.el.find('.actionDeleteAll').click(function(e){
-				e.preventDefault();
-
-				var link = $(this);
-
-				if (confirm('Delete all selected?')) {
-					var params = {
-						action: 'deleteFavorites',
-						username: that.form[0].username.value,
-						images: that.getSelected()
-					};
-
-					$.post(that.form.attr('action'), params, function(data){
-						$.each(data.images, function(i, image){
-							$('#image_'+image.id).closest('li').remove();
-						});
-					}, 'json');
-
-					that.el.hide();
-				}
-			});
-
-			this.el.find('.actionAddAll, .actionRemoveAll').click(function(e){
-				e.preventDefault();
-
-				var link = $(this);
-
-				var params = {
-					action: link.data('action'),
-					username: that.form[0].username.value,
-					gallery: link.data('gallery-id'),
-					images: that.getSelected()
-				};
-
-				$.post(that.form.attr('action'), params, function(data){
-					$.each(data.images, function(i, image){
-						var galleries = image.galleries.join(', ');
-						$('#image_'+image.id).data('galleries', galleries).attr('data-galleries', galleries);
-					});
-				}, 'json');
-			});
 		},
-		show: function(rel){
-			var linkPos = rel.offset();
+		show: function(link){
+			var $link = $(link);
+
+			if (this.activeLink && this.activeLink[0] === $link[0] && this.el.is(':visible')) {
+				this.el.hide();
+				this.activeLink = null;
+				this.imagesBlock = null;
+				return;
+			}
+
+			this.activeLink = $link;
+			this.imagesBlock = this.activeLink.closest('.b-images');
+
+			var imageGalleries = this.activeLink.data('galleries').split(', ');
+
+			this.form[0].username.value = this.imagesBlock.data('username');
+			this.form[0].image_id.value = this.activeLink.data('id');
+
+			this.galleries.each(function(){
+				this.checked = (imageGalleries.indexOf(this.value) !== -1);
+			});
+
+			var linkPos = this.activeLink.offset();
 			this.el.css({
 				left: linkPos.left,
-				top: linkPos.top+rel.height()
+				top: linkPos.top+this.activeLink.height()
 			}).show();
 		},
 		getSelected: function(){
@@ -369,24 +350,116 @@ $(function(){
 	};
 	updateControl.init();
 
+	$('.authors-list').on('contextmenu', '.showInGallery', function(e){
+		e.preventDefault();
+
+		updateControl.show(this);
+	});
+
 	$('.authors-list').on('click', '.update', function(e){
 		e.preventDefault();
 
-		updateControl.link = $(this);
-		updateControl.imagesBlock = updateControl.link.closest('.b-images');
+		updateControl.show($(this).prev('.showInGallery'));
+	});
 
-		var imageLink = updateControl.link.prev('.showInGallery');
-		var imageGalleries = imageLink.data('galleries').split(', ');
+	var moveMenu = {
+		el: $('.moveMenu'),
+		action: null,
+		activeLink: null,
+		imagesBlock: null,
+		username: null,
+		init: function(){
+			var that = this;
 
-		//imageLink.addClass('selected');
+			this.el.find('a').click(function(e){
+				e.preventDefault();
 
-		updateControl.form[0].username.value = updateControl.imagesBlock.data('username');
-		updateControl.form[0].image_id.value = imageLink.data('id');
+				var params = {
+					action: that.action,
+					username: that.username,
+					gallery: $(this).data('id'),
+					images: that.getSelected()
+				};
 
-		updateControl.galleries.each(function(){
-			this.checked = (imageGalleries.indexOf(this.value) !== -1);
-		});
+				$.post('updateImage.php', params, function(data){
+					$.each(data.images, function(i, image){
+						var galleries = image.galleries.join(', ');
+						$('#image_'+image.id).data('galleries', galleries).attr('data-galleries', galleries);
+					});
+				}, 'json');
 
-		updateControl.show(imageLink);
+				that.close();
+			});
+		},
+		open: function(link){
+			var $link = $(link);
+
+			if (this.activeLink && this.activeLink[0] === $link[0] && this.el.is(':visible')) {
+				this.close();
+				return;
+			}
+
+			this.activeLink = $link;
+			this.imagesBlock = this.activeLink.closest('.b-author').find('.b-images');
+			this.username = this.imagesBlock.data('username');
+
+			var linkPos = this.activeLink.offset();
+			this.el.css({
+				left: linkPos.left,
+				top: linkPos.top+this.activeLink.height()
+			}).outerWidth(this.activeLink.outerWidth()).show();
+		},
+		close: function(){
+			this.el.hide();
+			this.activeLink = null;
+			this.imagesBlock = null;
+			this.username = null;
+		},
+		getSelected: function(){
+			return this.imagesBlock.find('.selected').map(function(){
+				return $(this).data('id');
+			}).toArray();
+		}
+	};
+	moveMenu.init();
+
+	$('.authors-list').on('click', '.actionAddGallery', function(e){
+		e.preventDefault();
+
+		moveMenu.action = 'addGallery';
+		moveMenu.open(this);
+	});
+
+	$('.authors-list').on('click', '.actionRemoveGallery', function(e){
+		e.preventDefault();
+
+		moveMenu.action = 'removeGallery';
+		moveMenu.open(this);
+	});
+
+	$('.authors-list').on('click', '.actionDeleteFavourite', function(e){
+		e.preventDefault();
+
+		if (!confirm('Delete all selected favourites?'))
+			return;
+
+		var link = $(this);
+		var imagesBlock = link.closest('.b-author').find('.b-images');
+		var username = imagesBlock.data('username');
+		var selectedImages = imagesBlock.find('.selected').map(function(){
+			return $(this).data('id');
+		}).toArray();
+
+		var params = {
+			action: 'deleteFavorites',
+			username: username,
+			images: selectedImages
+		};
+
+		$.post('updateImage.php', params, function(data){
+			$.each(data.images, function(i, image){
+				$('#image_'+image.id).closest('li').remove();
+			});
+		}, 'json');
 	});
 });

@@ -1,4 +1,9 @@
 <div class="b-author">
+	<div class="actions">
+		<a href="#" class="m-button m-down actionAddGallery">Add Collection</a>
+		<a href="#" class="m-button m-down actionRemoveGallery">Remove Collection</a>
+		<a href="#" class="m-button actionDeleteFavourite">Delete Favourites</a>
+	</div>
 	<h3>
 		<span class="number"><?=$i+$topOffset+1?></span>
 		<a target="_blank" href="?<?=$limitsParams?>&amp;username=<?=$author['username']?>"><?=$author['username']?></a>

@@ -61,6 +61,15 @@ input[type=submit].disabled {
 	border-color: rgba(80, 80, 80, .2);
 	box-shadow: 0 1px 0 rgba(80, 80, 80, .08), inset 0 1px 2px rgba(255, 255, 255, .75);
 }
+.m-down {
+	padding-right: 8px;
+}
+.m-down:after {
+	content: '\25BC';
+	margin-left: 4px;
+	font-size: 0.8em;
+	color: #666;
+}
 .clearInput {
 	display: inline-block;
 	vertical-align: top;
@@ -161,6 +170,10 @@ input[type=submit].disabled {
 .b-author {
 	padding-bottom: 20px;
 	border-bottom: 3px solid #ddd;
+}
+.b-author .actions {
+	float: right;
+	margin: 2px;
 }
 .b-author .number {
 	display: inline-block;
@@ -291,15 +304,38 @@ input[type=submit].disabled {
 	border-bottom-color: white;
 }
 
+.moveMenu {
+	display: none;
+	position: absolute;
+	margin-top: 9px;
+	min-width: 100px;
+	background: white;
+	border: 1px solid #999;
+	box-shadow: 0 2px 4px rgba(0,0,0,.5);
+}
+.moveMenu ul {
+	margin: 0;
+	padding: 8px 0;
+	list-style: none;
+}
+.moveMenu a {
+	display: block;
+	padding: 4px 10px;
+	color: #333;
+}
+.moveMenu a:hover {
+	background: #ddd;
+}
+
 .updateControl {
 	display: none;
 	position: absolute;
 	margin-top: 3px;
 	padding: 8px 16px;
-	min-width: 200px;
+	min-width: 150px;
 	background: white;
 	border: 1px solid #999;
-	box-shadow: 0 1px 5px rgba(0,0,0,.5);
+	box-shadow: 0 2px 4px rgba(0,0,0,.5);
 }
 .updateControl:before {
 	content: '';
