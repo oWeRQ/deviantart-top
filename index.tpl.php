@@ -97,9 +97,11 @@
 	<? endif ?>
 
 	<div class="authors-list">
-		<? foreach ($authors as $i => $author): ?>
-			<? require 'index.item.tpl.php'; ?>
-		<? endforeach ?>
+		<div id="page_<?=$page?>" class="page" data-num="<?=$page?>">
+			<? foreach ($authors as $i => $author): ?>
+				<? require 'index.item.tpl.php'; ?>
+			<? endforeach ?>
+		</div>
 	</div>
 
 	<? if (count($authors) === $topLimit): ?>
