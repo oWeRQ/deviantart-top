@@ -196,7 +196,9 @@ input[type=submit].disabled {
 }
 .b-images img {
 	display: block;
+	min-width: 24px;
 	height: 120px;
+	background: #eee;
 }
 .b-images .selected {
 	background: #36c;
@@ -293,7 +295,7 @@ input[type=submit].disabled {
 	background: transparent;
 }
 .modal-window .gallery .thumbs-list {
-	width: 30000px;
+	width: 90000px;
 }
 .modal-window .gallery .thumbs-list a img {
 	border-color: #888;
@@ -328,6 +330,7 @@ input[type=submit].disabled {
 	padding: 4px 10px;
 	color: #333;
 }
+.moveMenu a:focus,
 .moveMenu a:hover {
 	background: #ddd;
 }

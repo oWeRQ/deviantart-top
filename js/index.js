@@ -17,7 +17,9 @@ $(function(){
 		$(this).prev('input').val('');
 	});
 
-	$('.authors-list').on('click', '.moreImages', function(e){
+	var authorsList = $('.authors-list');
+
+	authorsList.on('click', '.moreImages', function(e){
 		e.preventDefault();
 
 		var link = $(this),
@@ -76,7 +78,7 @@ $(function(){
 					gallery.appendImage({
 						thumb: link[0].firstElementChild.src,
 						middle: link[0].href,
-						big: link[0].href
+						big: link[0].dataset.big
 					});
 				}
 			});
@@ -119,8 +121,7 @@ $(function(){
 		e.preventDefault();
 
 		var link = $(this),
-			url = this.href,
-			authorsList = $('.authors-list');
+			url = this.href;
 
 		if (link.hasClass('disabled'))
 			return;
@@ -128,7 +129,7 @@ $(function(){
 		link.addClass('disabled');
 
 		$.getJSON(url, function(data){
-			history.replaceState({}, '', url);
+			//history.replaceState({}, '', url);
 			if (data.page === 1)
 				link.hide();
 			else
@@ -159,8 +160,7 @@ $(function(){
 		e.preventDefault();
 
 		var link = $(this),
-			url = this.href,
-			authorsList = $('.authors-list');
+			url = this.href;
 
 		if (link.hasClass('disabled'))
 			return;
@@ -168,7 +168,7 @@ $(function(){
 		link.addClass('disabled');
 
 		$.getJSON(url, function(data){
-			history.replaceState({}, 'page '+data.page, url);
+			//history.replaceState({}, 'page '+data.page, url);
 			link.prop('href', data.nextUrl).removeClass('disabled');
 
 			var winScrollX = window.scrollX,
@@ -191,11 +191,6 @@ $(function(){
 			$(window).on('scroll', scrollShowMore);
 			$(window).on('scroll', scrollPage).scroll();
 		});
-
-		/*if (!scrollShowMoreEnabled) {
-			scrollShowMoreEnabled = true;
-			$(window).on('scroll', scrollShowMore);
-		}*/
 	});
 
 	var galleryModal = $.modalWindow({
@@ -239,14 +234,28 @@ $(function(){
 		if (galleryModal.isOpen) {
 			e.preventDefault();
 
-			if (e.keyCode === 37) // left
+			if (e.isKey('esc', 'q'))
+				galleryModal.close();
+			else if (e.isKey('left', 'backspace', 'a'))
 				gallery.setActive(gallery.idx-1);
-			else if (e.keyCode === 39 || e.which === 32) // right or space
+			else if (e.isKey('right', 'space', 'd'))
 				gallery.setActive(gallery.idx+1);
-			else if (e.which === 43) // plus
+			else if (e.isKey('+', 'w')) {
 				imagesBlock.find('.showInGallery').eq(gallery.idx).addClass('selected');
-			else if (e.which === 45) // minus
+				gallery.setActive(gallery.idx+1);
+			}
+			else if (e.isKey('-', 's')) {
 				imagesBlock.find('.showInGallery').eq(gallery.idx).removeClass('selected');
+				gallery.setActive(gallery.idx+1);
+			}
+			else if (e.isKey('e')) {
+				galleryModal.close();
+				imagesBlock.closest('.b-author').find('.actionAddGallery').click();
+			}
+			else if (e.isKey('r')) {
+				galleryModal.close();
+				imagesBlock.closest('.b-author').find('.actionRemoveGallery').click();
+			}
 		}
 	});
 
@@ -268,7 +277,7 @@ $(function(){
 		galleryModal.windowCenter.updatePosition();
 	};
 
-	$('.authors-list').on('click', '.showInGallery', function(e){
+	authorsList.on('click', '.showInGallery', function(e){
 		e.preventDefault();
 
 		var link = $(this),
@@ -308,7 +317,7 @@ $(function(){
 			return {
 				thumb: link.firstElementChild.src,
 				middle: link.href,
-				big: link.href
+				big: link.dataset.big
 			};
 		});
 
@@ -386,13 +395,13 @@ $(function(){
 	};
 	updateControl.init();
 
-	$('.authors-list').on('contextmenu', '.showInGallery', function(e){
+	authorsList.on('contextmenu', '.showInGallery', function(e){
 		e.preventDefault();
 
 		updateControl.show(this);
 	});
 
-	$('.authors-list').on('click', '.update', function(e){
+	authorsList.on('click', '.update', function(e){
 		e.preventDefault();
 
 		updateControl.show($(this).prev('.showInGallery'));
@@ -400,14 +409,18 @@ $(function(){
 
 	var moveMenu = {
 		el: $('.moveMenu'),
+		links: null,
 		action: null,
 		activeLink: null,
 		imagesBlock: null,
 		username: null,
+		selected: -1,
 		init: function(){
 			var that = this;
 
-			this.el.find('a').click(function(e){
+			this.keypress = $.proxy(this.keypress, this);
+
+			this.links = this.el.find('a').click(function(e){
 				e.preventDefault();
 
 				var params = {
@@ -427,6 +440,27 @@ $(function(){
 				that.close();
 			});
 		},
+		keypress: function(e) {
+			if (e.isKey('esc', 'q')) {
+				this.close();
+			}
+			else if (e.isKey('up')) {
+				e.preventDefault();
+
+				if (--this.selected < 0)
+					this.selected = 0;
+
+				this.links.eq(this.selected).focus();
+			}
+			else if (e.isKey('down')) {
+				e.preventDefault();
+
+				if (++this.selected > this.links.length-1)
+					this.selected = this.links.length-1;
+
+				this.links.eq(this.selected).focus();
+			}
+		},
 		open: function(link){
 			var $link = $(link);
 
@@ -434,6 +468,8 @@ $(function(){
 				this.close();
 				return;
 			}
+
+			$(document).on('keypress', this.keypress);
 
 			this.activeLink = $link;
 			this.imagesBlock = this.activeLink.closest('.b-author').find('.b-images');
@@ -446,10 +482,13 @@ $(function(){
 			}).outerWidth(this.activeLink.outerWidth()).show();
 		},
 		close: function(){
+			$(document).off('keypress', this.keypress);
+
 			this.el.hide();
 			this.activeLink = null;
 			this.imagesBlock = null;
 			this.username = null;
+			this.selected = -1;
 		},
 		getSelected: function(){
 			return this.imagesBlock.find('.selected').map(function(){
@@ -459,21 +498,21 @@ $(function(){
 	};
 	moveMenu.init();
 
-	$('.authors-list').on('click', '.actionAddGallery', function(e){
+	authorsList.on('click', '.actionAddGallery', function(e){
 		e.preventDefault();
 
 		moveMenu.action = 'addGallery';
 		moveMenu.open(this);
 	});
 
-	$('.authors-list').on('click', '.actionRemoveGallery', function(e){
+	authorsList.on('click', '.actionRemoveGallery', function(e){
 		e.preventDefault();
 
 		moveMenu.action = 'removeGallery';
 		moveMenu.open(this);
 	});
 
-	$('.authors-list').on('click', '.actionDeleteFavourite', function(e){
+	authorsList.on('click', '.actionDeleteFavourite', function(e){
 		e.preventDefault();
 
 		if (!confirm('Delete all selected favourites?'))

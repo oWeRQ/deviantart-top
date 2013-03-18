@@ -7,13 +7,19 @@
 	<h3>
 		<span class="number"><?=$i+$topOffset+1?></span>
 		<a target="_blank" href="?<?=$limitsParams?>&amp;username=<?=$author['username']?>"><?=$author['username']?></a>
-		<small><?=$author['percent']?>%</small>
+		<small>
+			<?=$author['total']?>
+			/
+			<?=$author['deviations']?>
+			=
+			<?=$author['percent']?>%
+		</small>
 		<sup><a target="_blank" href="http://<?=$author['username']?>.deviantart.com/gallery/">DA</a></sup>
 	</h3>
 	<ul class="b-inline b-images" data-username="<?=$author['username']?>" data-images-total="<?=$author['total']?>" data-images-loaded="<?=count($author['images'])?>">
 		<? foreach ($author['images'] as $image): ?>
 			<li>
-				<a id="image_<?=$image['id']?>" class="showInGallery" href="images/<?=$image['filename']?>" target="_blank" title="<?=$image['title']?>" data-galleries="<?=join(', ', $image['galleries'])?>" data-id="<?=$image['id']?>">
+				<a id="image_<?=$image['id']?>" class="showInGallery" href="images/<?=$image['filename']?>" data-big="<?=$image['page']?>" target="_blank" title="<?=$image['title']?>" data-galleries="<?=join(', ', $image['galleries'])?>" data-id="<?=$image['id']?>">
 					<img src="images/mythumbs/<?=$image['filename']?>">
 				</a>
 				<a class="update" href="#"></a>

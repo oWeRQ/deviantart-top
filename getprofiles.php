@@ -1,7 +1,6 @@
 <?php
 
 require_once 'deviantart.class.php';
-Devianart::$cache_time = 604800;
 
 $images_by_author = json_decode(file_get_contents('images_by_author.json'), true);
 
@@ -9,7 +8,7 @@ $profiles = array();
 
 foreach (array_keys($images_by_author) as $i => $author) {
 	echo "get profile #$i $author\n";
-	$profile = Devianart::userinfo($author);
+	$profile = Deviantart::userinfo($author);
 	if ($profile) {
 		$profile['username'] = $author;
 		$profile['myfavourites'] = count($images_by_author[$author]);

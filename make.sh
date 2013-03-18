@@ -13,9 +13,9 @@ cp profiles.json $root/backup/profiles.json_`date +%F`
 
 cd $root/images/
 wget -ci $root/images.txt
-cd $root/middle/
+cd $root/images/middle/
 wget -ci $root/middle.txt
-cd $root/thumbs/
+cd $root/images/thumbs/
 wget -ci $root/thumbs.txt
 
 cd $root

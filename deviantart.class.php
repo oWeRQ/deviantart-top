@@ -1,6 +1,6 @@
 <?php
 
-class Devianart
+class Deviantart
 {
 	protected $oEmbedUrl = 'http://backend.deviantart.com/oembed?url=';
 	
@@ -254,3 +254,5 @@ class Devianart
 		return $favs;
 	}
 }
+
+class Devianart extends Deviantart {}

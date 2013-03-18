@@ -3,17 +3,19 @@
 error_reporting(E_ALL);
 
 require_once 'deviantart.class.php';
-Devianart::$silent = true;
+Deviantart::$silent = true;
 
 $images_by_author = json_decode(file_get_contents('images_by_author.json'), true);
 $profiles = json_decode(file_get_contents('profiles.json'), true);
 
-$devianart = new Devianart;
-$galleries = $devianart->getFavGalleries(16413375, 21);
+$deviantart = new Deviantart;
+$galleries = $deviantart->getFavGalleries(16413375, 21);
 $checked_galleries = (array)@$_REQUEST['galleries'];
 $exclude_galleries = (array)@$_REQUEST['exclude'];
 $condition = @$_REQUEST['condition'];
+$sort = @$_REQUEST['sort'];
 $minFavs = (int)@$_REQUEST['minFavs'];
+$maxFavs = (int)@$_REQUEST['maxFavs'];
 $minDevia = (int)@$_REQUEST['minDevia'];
 $imagesLoaded = (int)@$_REQUEST['imagesLoaded'];
 $topLimit = (int)@$_REQUEST['topLimit'];
@@ -25,6 +27,9 @@ $titleRegex = '#'.$title.'#ui';
 
 if (empty($condition))
 	$condition = 'or';
+
+if (empty($sort))
+	$sort = 'percent';
 
 if ($minFavs <= 0)
 	$minFavs = 1;
@@ -49,9 +54,11 @@ $galleriesParams = http_build_query(array(
 ));
 $limitsParams = http_build_query(array(
 	'minFavs' => $minFavs,
+	'maxFavs' => $maxFavs,
 	'minDevia' => $minDevia,
-	'topLimit' => $topLimit,
 	'imagesLimit' => $imagesLimit,
+	'topLimit' => $topLimit,
+	'sort' => $sort,
 ));
 
 function getFavImages($username) {
@@ -114,31 +121,49 @@ if (!empty($username)) {
 		'username' => $username,
 		'percent' => round($favourites/$profile['deviations']*100, 1),
 		'total' => $favourites,
+		'deviations' => $profile['deviations'],
 		'images' => array_slice($images, $imagesLoaded, $imagesLimit),
 	);
 } else {
-	$top = array_values(array_filter(array_map(function($profile) use($minFavs, $minDevia, $imagesLoaded, $imagesLimit){
+	$top = array_values(array_filter(array_map(function($profile) use($minFavs, $maxFavs, $minDevia, $imagesLoaded, $imagesLimit){
 		if (isset($profile['deviations']) && $profile['deviations'] >= $minDevia) {
 			$images = getFavImages($profile['username']);
 			$favourites = count($images);
 			//echo "$favourites {$profile['username']}/{$profile['deviations']}<br>";
-			if ($favourites !==0 && $favourites >= $minFavs) {
+			if ($favourites !==0 && $favourites >= $minFavs && ($maxFavs === 0 || $favourites <= $maxFavs)) {
 				return array(
 					'username' => $profile['username'],
 					'percent' => round($favourites/$profile['deviations']*100, 1),
 					'total' => $favourites,
+					'deviations' => $profile['deviations'],
 					'images' => array_slice($images, $imagesLoaded, $imagesLimit),
 				);
 			}
 		}
 	}, $profiles)));
 
-	usort($top, function($a, $b){
-		if ($a['percent'] == $b['percent'])
-			return 0;
+	if ($sort === 'percent') {
+		usort($top, function($a, $b){
+			if ($a['percent'] == $b['percent'])
+				return 0;
 
-		return ($a['percent'] > $b['percent']) ? -1 : 1;
-	});
+			return ($a['percent'] > $b['percent']) ? -1 : 1;
+		});
+	} elseif ($sort === 'favourites') {
+		usort($top, function($a, $b){
+			if ($a['total'] == $b['total'])
+				return 0;
+
+			return ($a['total'] > $b['total']) ? -1 : 1;
+		});
+	} elseif ($sort === 'deviations') {
+		usort($top, function($a, $b){
+			if ($a['deviations'] == $b['deviations'])
+				return 0;
+
+			return ($a['deviations'] > $b['deviations']) ? -1 : 1;
+		});
+	}
 
 	$authors = array_slice($top, $topOffset, $topLimit);
 }

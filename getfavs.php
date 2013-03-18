@@ -2,7 +2,7 @@
 
 require_once 'deviantart.class.php';
 
-$da = new Devianart;
+$da = new Deviantart;
 
 $galleries = $da->getFavGalleries(16413375, 21);
 

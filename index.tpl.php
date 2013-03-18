@@ -10,6 +10,7 @@
 	<link rel="stylesheet" href="css/index.css">
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
 	<script src="js/jquery.plugin.js"></script>
+	<script src="js/jquery.iskey.js"></script>
 	<script src="js/jquery.overlay.js"></script>
 	<script src="js/jquery.windowCenter.js"></script>
 	<script src="js/jquery.modalWindow.js"></script>
@@ -53,8 +54,18 @@
 			<a href="#" class="clearInput"></a>
 		</div>
 		<div class="row b-inline">
+			<label>Max Favs:</label>
+			<input type="text" name="maxFavs" value="<?=$maxFavs?>">
+			<a href="#" class="clearInput"></a>
+		</div>
+		<div class="row b-inline">
 			<label>Deviations:</label>
 			<input type="text" name="minDevia" value="<?=$minDevia?>">
+			<a href="#" class="clearInput"></a>
+		</div>
+		<div class="row b-inline">
+			<label>Images:</label>
+			<input type="text" name="imagesLimit" value="<?=$imagesLimit?>">
 			<a href="#" class="clearInput"></a>
 		</div>
 		<div class="row b-inline">
@@ -65,11 +76,6 @@
 		<div class="row b-inline">
 			<label>Page:</label>
 			<input type="text" name="page" value="<?=$page?>">
-			<a href="#" class="clearInput"></a>
-		</div>
-		<div class="row b-inline">
-			<label>Images:</label>
-			<input type="text" name="imagesLimit" value="<?=$imagesLimit?>">
 			<a href="#" class="clearInput"></a>
 		</div>
 
@@ -83,6 +89,19 @@
 		<div class="row">
 			<input type="text" name="title" value="<?=$title?>">
 			<a href="#" class="clearInput"></a>
+		</div>
+
+		<h3>Sort</h3>
+		<div class="row">
+			<select name="sort">
+				<? foreach (array(
+					'percent'=>'Percent',
+					'favourites'=>'Favourites',
+					'deviations'=>'Deviations',
+				) as $value => $name): ?>
+					<option value="<?=$value?>" <?if($value==$sort):?>selected<?endif?>><?=$name?></option>
+				<? endforeach ?>
+			</select>
 		</div>
 		
 		<div class="row actions">
