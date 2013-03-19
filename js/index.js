@@ -38,7 +38,7 @@ $(function(){
 
 		$.post(window.location.href, {
 			username: username,
-			imagesLoaded: imagesLoaded
+			imagesOffset: imagesLoaded
 		}, function(data){
 			var author = data.authors[0],
 				count = author.images.length;
@@ -46,7 +46,7 @@ $(function(){
 			if (imagesLoaded+count >= imagesTotal)
 				link.remove();
 			else
-				link.text('More images ('+(author.total-imagesLoaded-count)+')');
+				link.text('More images ('+(author.favourites-imagesLoaded-count)+')');
 
 			imagesBlock.data('images-loaded', imagesLoaded+count);
 

@@ -44,7 +44,7 @@
 		<div class="row">
 			<label><input type="radio" name="condition" value="or" <?if($condition=='or'):?>checked<?endif?>> OR</label>
 			<label><input type="radio" name="condition" value="and" <?if($condition=='and'):?>checked<?endif?>> AND</label>
-			<label><input type="radio" name="condition" value="xor" <?if($condition=='xor'):?>checked<?endif?>> XOR</label>
+			<label><input type="radio" name="condition" value="only" <?if($condition=='only'):?>checked<?endif?>> ONLY</label>
 		</div>
 
 		<h3>Limits</h3>
@@ -95,6 +95,8 @@
 		<div class="row">
 			<select name="sort">
 				<? foreach (array(
+					'score'=>'Score',
+					'wilson_score'=>'Wilson Score',
 					'percent'=>'Percent',
 					'favourites'=>'Favourites',
 					'deviations'=>'Deviations',

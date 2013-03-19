@@ -44,13 +44,13 @@ class Deviantart
 		return $counts;
 	}
 
-	function sendCall($callObj, $callMethod, $callParams, $username = 'my', $method = 'get', $try = 3)
+	function sendCall($callObj, $callMethod, $callParams, $method = 'get', $try = 3)
 	{
 		$callStr = '"'.$callObj.'","'.$callMethod.'",["'.join('","', $callParams).'"]';
 
 		$parts = array(
 			'scheme' => 'http',
-			'host' => $username.'.deviantart.com',
+			'host' => 'my.deviantart.com',
 			'path' => '/global/difi/',
 			'query' => '',
 		);
@@ -94,7 +94,7 @@ class Deviantart
 			if (--$try > 0) {
 				echo "try: $try\n";
 				unlink($data_file);
-				return $this->sendCall($callObj, $callMethod, $callParams, $username, $method, $try);
+				return $this->sendCall($callObj, $callMethod, $callParams, $method, $try);
 			}
 
 			echo "error: ".$json['DiFi']['response']['error']."\n";
@@ -150,14 +150,14 @@ class Deviantart
 			1,
 			$image_id,
 			$position,
-		), 'owerq', 'post');
+		), 'post');
 	}
 
 	function toggleFavourite($image_id)
 	{
 		return $this->sendCall("Deviation", "Favourite", array(
 			$image_id,
-		), 'owerq', 'post');
+		), 'post');
 	}
 
 	function removeFavGalleries($user_id, $gallery_id, $image_id)
@@ -168,7 +168,7 @@ class Deviantart
 			$gallery_id,
 			1,
 			$image_id,
-		), 'owerq', 'post');
+		), 'post');
 	}
 
 	function getFavPage($user, $offset = 0)
