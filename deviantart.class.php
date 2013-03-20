@@ -21,7 +21,7 @@ class Deviantart
 			$html = file_get_contents($file);
 		} else {
 			$url = 'http://'.$username.'.deviantart.com';
-			$html = file_get_contents($url);
+			$html = @file_get_contents($url);
 			file_put_contents($file, $html);
 		}
 
@@ -77,10 +77,10 @@ class Deviantart
 				echo "read: $data_file (".date('Y-m-d', filemtime($data_file)).")\n";
 			$data = file_get_contents($data_file);
 		} else {
-			if (!self::$silent)
-				echo "fetch: $data_file\n";
-
 			if ($method === 'get') {
+				if (!self::$silent)
+					echo "fetch: $data_file\n";
+
 				$data = file_get_contents($url);
 				file_put_contents($data_file, $data);
 			} elseif ($method === 'post') {
@@ -132,7 +132,6 @@ class Deviantart
 
 	function getFavGalleries($user_id, $type = 21)
 	{
-		//return $this->sendCall('"Aggregations","get_galleries_initial",["'.$user_id.'","'.$type.'","1"]');
 		return $this->sendCall("Aggregations", "get_galleries_initial", array(
 			$user_id,
 			$type,
@@ -173,7 +172,6 @@ class Deviantart
 
 	function getFavPage($user, $offset = 0)
 	{
-		//return $this->sendCall('"Resources","htmlFromQuery",["favby:'.$user.'","'.$offset.'","24","thumb150","artist:0,title:0,collections:1,galleries:1"]');
 		return $this->sendCall("Resources", "htmlFromQuery", array(
 			"favby:".$user,
 			$offset,
@@ -183,12 +181,13 @@ class Deviantart
 		));
 	}
 
-	/* Need auth
 	function getDevwatch($id)
 	{
-		return $this->sendCall('"MessageCenter","get_views",["'.$id.'","oq:devwatch:0:48:f:tg=deviations,group=sender"]');
+		return $this->sendCall("MessageCenter", "get_views", array(
+			$id,
+			"oq:devwatch:0:48:f:tg=deviations,group=sender",
+		), 'post');
 	}
-	*/
 
 	function getFavs($user, $offset = 0)
 	{

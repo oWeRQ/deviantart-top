@@ -25,8 +25,6 @@ foreach ($galleries as $gallery) {
 		mkdir($galleryDir, 0777, true);
 
 	foreach ($favs as $fav) {
-		//var_dump($fav);die();
-
 		$filename = pathinfo(parse_url($fav['image'], PHP_URL_PATH), PATHINFO_BASENAME);
 
 		if (!file_exists('images/'.$filename) && !in_array($filename, $newImageFiles)) {
@@ -47,11 +45,6 @@ foreach ($galleries as $gallery) {
 		if (!is_link($galleryDir.$filename))
 			symlink('../../images/'.$filename, $galleryDir.$filename);
 
-		/*if (!isset($images[$gallery['title']]))
-			$images[$gallery['title']] = array();
-
-		$images[$gallery['title']][] = $fav;*/
-
 		if (isset($images[$fav['id']])) {
 			$images[$fav['id']]['galleries'][] = $gallery['title'];
 		} else {
@@ -66,7 +59,7 @@ foreach ($galleries as $gallery) {
 file_put_contents('images.txt', implode("\n", $newImages));
 file_put_contents('middle.txt', implode("\n", $newMiddle));
 file_put_contents('thumbs.txt', implode("\n", $newThumbs));
-file_put_contents('images_with_galleries.json', json_encode(array_values($images)));
+file_put_contents('images_with_galleries.json', json_encode($images));
 
 foreach ($images as $image) {
 	$images_by_author[$image['author']][$image['id']] = $image;

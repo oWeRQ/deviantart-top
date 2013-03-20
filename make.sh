@@ -2,7 +2,7 @@
 
 root=$PWD
 
-find cache/ -type f -size 0 -exec rm {} \;
+#find cache/ -type f -size 0 -exec rm {} \;
 find images/ -type f -size 0 -exec rm {} \;
 
 php getfavs.php
