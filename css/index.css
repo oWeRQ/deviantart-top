@@ -126,6 +126,7 @@ input[type=submit].disabled {
 
 .l-sidebar {
 	position: fixed;
+	overflow-y: auto;
 	left: 0;
 	top: 0;
 	bottom: 0;
@@ -153,7 +154,7 @@ input[type=submit].disabled {
 	opacity: .4;
 }
 .l-content {
-	margin-left: 210px;
+	margin-left: 200px;
 }
 .b-inline {
 	letter-spacing: -0.31em; /* webkit: collapse white-space between units */
@@ -168,12 +169,15 @@ input[type=submit].disabled {
 	vertical-align: top;
 }
 .b-author {
-	padding-bottom: 20px;
+	padding: 2px 8px 8px;
 	border-bottom: 3px solid #ddd;
+}
+.b-author.m-active {
+	background: #f0f0f0;
 }
 .b-author .actions {
 	float: right;
-	margin: 2px;
+	margin: 8px 2px;
 }
 .b-author .number {
 	display: inline-block;
@@ -206,6 +210,12 @@ input[type=submit].disabled {
 }
 .b-images .selected img {
 	opacity: .7;
+}
+.b-author.m-active .b-images .cursor {
+	position: relative;
+	background: #6cf;
+	outline: 3px solid #6cf;
+	z-index: 1;
 }
 .b-images .showInGallery {
 	display: block;
@@ -314,6 +324,7 @@ input[type=submit].disabled {
 .moveMenu {
 	display: none;
 	position: absolute;
+	z-index: 10;
 	margin-top: 9px;
 	min-width: 100px;
 	background: white;

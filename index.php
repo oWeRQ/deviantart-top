@@ -2,6 +2,8 @@
 
 error_reporting(E_ALL);
 
+define(IS_ADMIN, $_SERVER['PHP_AUTH_USER'] === 'admin');
+
 require_once 'deviantart.class.php';
 Deviantart::$silent = true;
 
@@ -62,6 +64,15 @@ $limitsParams = http_build_query(array(
 	'minDevia' => $minDevia,
 	'imagesLimit' => $imagesLimit,
 	'topLimit' => $topLimit,
+	'sort' => $sort,
+));
+
+$userLimitsParams = http_build_query(array(
+	'minFavs' => $minFavs,
+	'maxFavs' => $maxFavs,
+	'minDevia' => $minDevia,
+	'imagesLimit' => $imagesLimit * $topLimit,
+	'topLimit' => 1,
 	'sort' => $sort,
 ));
 

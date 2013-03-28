@@ -23,18 +23,18 @@ $(function(){
 		e.preventDefault();
 
 		var link = $(this),
-			imagesBlock = $(this).prev('.b-images'),
-			username = imagesBlock.data('username'),
-			imagesLoaded = imagesBlock.data('images-loaded');
-			imagesTotal = imagesBlock.data('images-total');
-			isLoading = imagesBlock.data('is-loading');
+			imagesList = $(this).prev('.b-images'),
+			username = imagesList.data('username'),
+			imagesLoaded = imagesList.data('images-loaded');
+			imagesTotal = imagesList.data('images-total');
+			isLoading = imagesList.data('is-loading');
 
 		if (isLoading)
 			return;
 
 		link.text('Loading...');
 
-		imagesBlock.data('is-loading', true);
+		imagesList.data('is-loading', true);
 
 		$.post(window.location.href, {
 			username: username,
@@ -48,7 +48,7 @@ $(function(){
 			else
 				link.text('More images ('+(author.favourites-imagesLoaded-count)+')');
 
-			imagesBlock.data('images-loaded', imagesLoaded+count);
+			imagesList.data('images-loaded', imagesLoaded+count);
 
 			$.each(author.images, function(i, image){
 				var link = $('<a>', {
@@ -71,7 +71,7 @@ $(function(){
 							href: '#'
 						})
 					],
-					appendTo: imagesBlock
+					appendTo: imagesList
 				});
 
 				if (galleryModal.isOpen) {
@@ -85,7 +85,7 @@ $(function(){
 
 			gallery.thumbsSlider.setActive(gallery.thumbsSlider.idx);
 
-			imagesBlock.data('is-loading', null);
+			imagesList.data('is-loading', null);
 		}, 'json');
 	});
 
@@ -94,7 +94,6 @@ $(function(){
 	var pageInput = $('.l-sidebar input[name=page]');
 
 	var scrollPage = function(e){
-		console.log(pages.length);
 		pages.each(function(){
 			if (window.scrollY < this.offsetTop + this.clientHeight) {
 				var page = $(this).data('num');
@@ -220,15 +219,32 @@ $(function(){
 	).appendTo(galleryModal.content);
 
 	var imagesBlock = null;
+	var setImagesBlock = function(el) {
+		if (imagesBlock)
+			imagesBlock.removeClass('m-active');
+
+		imagesBlock = $(el).addClass('m-active');
+
+		//window.scrollTo(window.scrollX, imagesBlock.prop('offsetTop'));
+	};
+	authorsList.on('click', '.b-author', function(){
+		setImagesBlock(this);
+	});
 
 	var gallery = $.gallery({
+		onActivate: function(){
+			if (imagesBlock)
+				imagesBlock.find('.showInGallery').removeClass('cursor').eq(this.idx).addClass('cursor');
+		},
 		thumbsSlider: {
 			paddingRight: 10,
 			onNextDisabled: function(){
-				imagesBlock.next('.moreImages').click();
+				imagesBlock.find('.moreImages').click();
 			}
 		}
 	}, galleryEl);
+
+	var sidebarInputs = $('.l-sidebar input');
 
 	$(document).on('keypress', function(e){
 		if (galleryModal.isOpen) {
@@ -250,12 +266,45 @@ $(function(){
 			}
 			else if (e.isKey('e')) {
 				galleryModal.close();
-				imagesBlock.closest('.b-author').find('.actionAddGallery').click();
+				imagesBlock.find('.actionAddGallery').click();
 			}
 			else if (e.isKey('r')) {
 				galleryModal.close();
-				imagesBlock.closest('.b-author').find('.actionRemoveGallery').click();
+				imagesBlock.find('.actionRemoveGallery').click();
 			}
+		} else if (sidebarInputs.filter(':focus').length === 0) {
+			if (!imagesBlock || imagesBlock.length === 0)
+				imagesBlock = authorsList.find('.b-author:first');
+
+			var imagesLinks = imagesBlock.find('.showInGallery');
+			var cursor = imagesLinks.filter('.cursor:first');
+			var cursorIdx = imagesLinks.index(cursor);
+
+			if (cursorIdx === -1)
+				cursorIdx = 0;
+
+			cursor.removeClass('cursor');
+
+			if (e.isKey('left', 'a')) {
+				e.preventDefault();
+				cursorIdx--;
+			} else if (e.isKey('right', 'd')) {
+				e.preventDefault();
+				cursorIdx++;
+			} else if (e.isKey('up', 'w')) {
+				e.preventDefault();
+				setImagesBlock(imagesBlock.prev());
+				imagesLinks = imagesBlock.find('.showInGallery');
+			} else if (e.isKey('down', 's')) {
+				e.preventDefault();
+				setImagesBlock(imagesBlock.next());
+				imagesLinks = imagesBlock.find('.showInGallery');
+			} else if (e.isKey('space', 'enter')) {
+				e.preventDefault();
+				cursor.click();
+			}
+
+			imagesLinks.eq(cursorIdx).addClass('cursor');
 		}
 	});
 
@@ -283,7 +332,7 @@ $(function(){
 		var link = $(this),
 			idx = link.closest('li').index();
 
-		imagesBlock = link.closest('.b-images');
+		setImagesBlock(link.closest('.b-author'));
 
 		if (e.ctrlKey || e.metaKey) {
 			link.toggleClass('selected');
@@ -312,7 +361,7 @@ $(function(){
 		updateGalleryPos();
 		$(window).on('resize', updateGalleryPos);
 
-		var images = imagesBlock.children().map(function(){
+		var images = imagesBlock.find('.b-images > li').map(function(){
 			var link = this.firstElementChild;
 			return {
 				thumb: link.firstElementChild.src,
@@ -370,7 +419,7 @@ $(function(){
 			}
 
 			this.activeLink = $link;
-			this.imagesBlock = this.activeLink.closest('.b-images');
+			this.imagesBlock = this.activeLink.closest('.b-author');
 
 			var imageGalleries = this.activeLink.data('galleries').split(', ');
 
@@ -472,7 +521,7 @@ $(function(){
 			$(document).on('keypress', this.keypress);
 
 			this.activeLink = $link;
-			this.imagesBlock = this.activeLink.closest('.b-author').find('.b-images');
+			this.imagesBlock = this.activeLink.closest('.b-author');
 			this.username = this.imagesBlock.data('username');
 
 			var linkPos = this.activeLink.offset();
@@ -519,7 +568,7 @@ $(function(){
 			return;
 
 		var link = $(this);
-		var imagesBlock = link.closest('.b-author').find('.b-images');
+		setImagesBlock(link.closest('.b-author'));
 		var username = imagesBlock.data('username');
 		var selectedImages = imagesBlock.find('.selected').map(function(){
 			return $(this).data('id');

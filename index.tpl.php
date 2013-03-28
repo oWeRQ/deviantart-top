@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Deviantart Top</title>
+	<title>deviantART Top</title>
 	<link rel="stylesheet" href="css/jquery.modalWindow.css">
 	<link rel="stylesheet" href="css/jquery.thumbsSlider.css">
 	<link rel="stylesheet" href="css/jquery.gallery.css">
@@ -136,6 +136,7 @@
 	<? endforeach ?>
 </datalist>
 
+<? if (IS_ADMIN): ?>
 <div class="moveMenu">
 	<ul>
 		<? foreach ($galleries as $gallery): ?>
@@ -169,6 +170,7 @@
 		</div>
 	</form>
 </div>
+<? endif ?>
 
 </body>
 </html>

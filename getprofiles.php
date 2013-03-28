@@ -1,7 +1,7 @@
 <?php
 
 require_once 'deviantart.class.php';
-Deviantart::$cache_time = 3600*24*7;
+Deviantart::$cache_time = 3600*24*14;
 
 $images_by_author = json_decode(file_get_contents('images_by_author.json'), true);
 
