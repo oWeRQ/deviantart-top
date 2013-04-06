@@ -24,11 +24,9 @@
 	<form>
 		<h3>Collections</h3>
 		<div class="checkboxes">
-			<div>
-				<small>
-					<a href="#" class="checkAll">Check All</a>
-					| <a href="#" class="uncheckAll">Uncheck All</a>
-				</small>
+			<div class="controls">
+				<a href="#" class="checkAll">Check All</a>
+				| <a href="#" class="uncheckAll">Uncheck All</a>
 			</div>
 			<? foreach ($galleries as $gallery): ?>
 				<input class="exclude" type="checkbox" name="exclude[]" value="<?=$gallery['title']?>"
@@ -137,7 +135,17 @@
 </datalist>
 
 <? if (IS_ADMIN): ?>
-<div class="moveMenu">
+<div id="checkMenu" class="b-dropmenu">
+	<ul>
+		<li>
+			<a href="#" data-check="all">All</a>
+			<a href="#" data-check="invert">Invert</a>
+			<a href="#" data-check="none">None</a>
+		</li>
+	</ul>
+</div>
+
+<div id="moveMenu" class="b-dropmenu">
 	<ul>
 		<? foreach ($galleries as $gallery): ?>
 			<li>

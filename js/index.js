@@ -23,18 +23,19 @@ $(function(){
 		e.preventDefault();
 
 		var link = $(this),
-			imagesList = $(this).prev('.b-images'),
-			username = imagesList.data('username'),
-			imagesLoaded = imagesList.data('images-loaded');
-			imagesTotal = imagesList.data('images-total');
-			isLoading = imagesList.data('is-loading');
+			imagesBlock = $(this).closest('.b-author'),
+			imagesList = imagesBlock.find('.b-images'),
+			username = imagesBlock.data('username'),
+			imagesLoaded = imagesBlock.data('images-loaded');
+			imagesTotal = imagesBlock.data('images-total');
+			isLoading = imagesBlock.data('is-loading');
 
 		if (isLoading)
 			return;
 
 		link.text('Loading...');
 
-		imagesList.data('is-loading', true);
+		imagesBlock.data('is-loading', true);
 
 		$.post(window.location.href, {
 			username: username,
@@ -48,7 +49,7 @@ $(function(){
 			else
 				link.text('More images ('+(author.favourites-imagesLoaded-count)+')');
 
-			imagesList.data('images-loaded', imagesLoaded+count);
+			imagesBlock.data('images-loaded', imagesLoaded+count);
 
 			$.each(author.images, function(i, image){
 				var link = $('<a>', {
@@ -57,6 +58,7 @@ $(function(){
 					href: 'images/'+image.filename,
 					target: '_blank',
 					title: image.title,
+					'data-big': image.page,
 					'data-id': image.id,
 					'data-galleries': image.galleries.join(', '),
 					append: $('<img>', {
@@ -85,7 +87,7 @@ $(function(){
 
 			gallery.thumbsSlider.setActive(gallery.thumbsSlider.idx);
 
-			imagesList.data('is-loading', null);
+			imagesBlock.data('is-loading', null);
 		}, 'json');
 	});
 
@@ -456,8 +458,88 @@ $(function(){
 		updateControl.show($(this).prev('.showInGallery'));
 	});
 
+	var checkMenu = {
+		el: $('#checkMenu'),
+		links: null,
+		activeLink: null,
+		init: function(){
+			var that = this;
+
+			//this.keypress = $.proxy(this.keypress, this);
+
+			this.links = this.el.find('a').click(function(e){
+				e.preventDefault();
+
+				var check = $(this).data('check');
+				var items = that.imagesBlock.find('.showInGallery');
+				var selected = items.filter('.selected');
+				var notSelected = items.not('.selected');
+
+				switch (check) {
+					case 'all':
+						items.addClass('selected');
+						that.checkbox.prop('checked', true);
+						break;
+					case 'none':
+						items.removeClass('selected');
+						that.checkbox.prop('checked', false);
+						break;
+					case 'invert':
+						selected.removeClass('selected');
+						notSelected.addClass('selected');
+						that.checkbox.prop('checked', false);
+						break;
+				}
+
+				that.close();
+			});
+		},
+		open: function(link){
+			var $link = $(link);
+
+			if (this.activeLink && this.activeLink[0] === $link[0] && this.el.is(':visible')) {
+				this.close();
+				return;
+			}
+
+			//$(document).on('keypress', this.keypress);
+
+			this.activeLink = $link;
+			this.checkbox = $link.find('input[type=checkbox]');
+			this.imagesBlock = this.activeLink.closest('.b-author');
+			this.username = this.imagesBlock.data('username');
+
+			var linkPos = this.activeLink.offset();
+			this.el.css({
+				left: linkPos.left,
+				top: linkPos.top+this.activeLink.height()
+			}).show();//.outerWidth(this.activeLink.outerWidth()).show();
+		},
+		close: function(){
+			//$(document).off('keypress', this.keypress);
+
+			this.el.hide();
+			this.activeLink = null;
+			this.imagesBlock = null;
+			//this.username = null;
+			//this.selected = -1;
+		},
+		getSelected: function(){
+			return this.imagesBlock.find('.selected').map(function(){
+				return $(this).data('id');
+			}).toArray();
+		}
+	};
+	checkMenu.init();
+
+	authorsList.on('click', '.actionCheckAll', function(e){
+		e.preventDefault();
+
+		checkMenu.open(this);
+	});
+
 	var moveMenu = {
-		el: $('.moveMenu'),
+		el: $('#moveMenu'),
 		links: null,
 		action: null,
 		activeLink: null,

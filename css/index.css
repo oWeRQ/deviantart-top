@@ -18,6 +18,10 @@ input[type=text] {
 	box-sizing: border-box;
 	width: 100%;
 }
+input[type=checkbox] {
+	margin: 0;
+	vertical-align: text-bottom;
+}
 input[type=radio] {
 	margin: 0 0 0 4px;
 }
@@ -25,6 +29,7 @@ input[type=radio] {
 input[type=submit] {
 	display: inline-block;
 	padding: 4px 12px;
+	line-height: 1.15;
 	color: #444;
 	background: #ededed;
 	background: linear-gradient(to bottom, #ededed, #ededed 38%, #dedede);
@@ -91,11 +96,15 @@ input[type=submit].disabled {
 .checkboxes label {
 	overflow: hidden;
 	display: block;
-	padding: 2px 0;
+	padding: 4px;
 }
 .checkboxes label:hover {
 	background: #fff;
 	border-radius: 2px;
+}
+.checkboxes .controls {
+	font-size: smaller;
+	margin-bottom: 4px;
 }
 .checkboxes .actions {
 	float: right;
@@ -121,7 +130,7 @@ input[type=submit].disabled {
 .row.b-inline label,
 .row.b-inline input[type=text] {
 	display: inline-block;
-	width: 75px;
+	width: 80px;
 }
 
 .l-sidebar {
@@ -131,10 +140,13 @@ input[type=submit].disabled {
 	top: 0;
 	bottom: 0;
 	padding: 8px 18px;
-	width: 150px;
+	width: 160px;
 	background: #eee;
 	background-image: linear-gradient(to right, #eee 97%, #e0e0e0);
 	border-right: 1px solid #d0d0d0;
+}
+.l-sidebar > form {
+	width: 160px;
 }
 .l-sidebar h3 {
 	margin: 16px 0 8px;
@@ -144,7 +156,7 @@ input[type=submit].disabled {
 }
 .l-sidebar input.exclude {
 	float: right;
-	margin: 5px;
+	margin: 5px 5px 0;
 }
 .l-sidebar input.exclude:checked + label {
 	color: #666;
@@ -202,7 +214,7 @@ input[type=submit].disabled {
 	display: block;
 	min-width: 24px;
 	height: 120px;
-	background: #eee;
+	background: #ddd;
 }
 .b-images .selected {
 	background: #36c;
@@ -234,6 +246,26 @@ input[type=submit].disabled {
 	opacity: 0;
 }
 .b-images li:hover .showInGallery:after {
+	transition: opacity 200ms;
+	opacity: 1;
+}
+.b-images .similar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 24px;
+	height: 24px;
+	line-height: 24px;
+	font-size: 18px;
+	text-align: center;
+	color: white;
+	background: rgba(0,0,0,.5);
+	opacity: 0;
+}
+.b-images .similar:after {
+	content: '\223C';
+}
+.b-images li:hover .similar {
 	transition: opacity 200ms;
 	opacity: 1;
 }
@@ -321,28 +353,28 @@ input[type=submit].disabled {
 	border-bottom-color: white;
 }
 
-.moveMenu {
+.b-dropmenu {
 	display: none;
 	position: absolute;
 	z-index: 10;
 	margin-top: 9px;
-	min-width: 100px;
 	background: white;
 	border: 1px solid #999;
 	box-shadow: 0 2px 4px rgba(0,0,0,.5);
 }
-.moveMenu ul {
+.b-dropmenu ul {
 	margin: 0;
 	padding: 8px 0;
 	list-style: none;
 }
-.moveMenu a {
+.b-dropmenu a {
 	display: block;
 	padding: 4px 10px;
+	padding-right: 20px;
 	color: #333;
 }
-.moveMenu a:focus,
-.moveMenu a:hover {
+.b-dropmenu a:focus,
+.b-dropmenu a:hover {
 	background: #ddd;
 }
 

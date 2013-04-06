@@ -3,7 +3,7 @@
 require_once 'deviantart.class.php';
 
 $deviantart = new Deviantart;
-//Deviantart::$cache_time = 3600*24;
+Deviantart::$cache_time = 0;
 
 $content = $deviantart->getFavGalleries(16413375, 21);
 
@@ -21,6 +21,6 @@ foreach ($content as $gallery) {
 	);
 }
 
-file_put_contents('getgalleries.out.txt', var_export($content, true));
+//file_put_contents('getgalleries.out.txt', var_export($content, true));
 
 file_put_contents('galleries_history.json', json_encode($galleries_history, JSON_PRETTY_PRINT));

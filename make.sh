@@ -13,10 +13,6 @@ cp profiles.json $root/backup/profiles.json_`date +%F`
 
 cd $root/images/
 wget -ci $root/images.txt
-cd $root/images/middle/
-wget -ci $root/middle.txt
-cd $root/images/thumbs/
-wget -ci $root/thumbs.txt
 
 cd $root
 ./make_thumbs.sh
