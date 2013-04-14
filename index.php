@@ -2,7 +2,7 @@
 
 error_reporting(E_ALL);
 
-define(IS_ADMIN, $_SERVER['PHP_AUTH_USER'] === 'admin');
+define('IS_ADMIN', $_SERVER['PHP_AUTH_USER'] === 'admin');
 
 require_once 'deviantart.class.php';
 Deviantart::$silent = true;
@@ -48,7 +48,7 @@ $title = (string)param('title', '');
 $sort = (string)param('sort', 'score');
 $sortDir = (int)param('sortDir', 1);
 
-$titleRegex = '#'.$title.'#ui';
+$titleRegex = '#(^|\s)'.$title.'(\s|$)#ui';
 
 $topOffset = $topLimit*($page-1);
 

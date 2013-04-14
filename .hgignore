@@ -3,3 +3,4 @@ cache/*
 galleries/*
 drop/*
 backup/*
+*.json

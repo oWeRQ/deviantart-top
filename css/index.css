@@ -381,6 +381,7 @@ input[type=submit].disabled {
 .updateControl {
 	display: none;
 	position: absolute;
+	z-index: 10;
 	margin-top: 3px;
 	padding: 8px 16px;
 	min-width: 150px;
