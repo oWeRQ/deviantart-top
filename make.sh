@@ -8,10 +8,10 @@ find images/ -type f -size 0 -exec rm {} \;
 php getfavs.php
 php getprofiles.php
 
-cp images_by_author.json $root/backup/images_by_author.json_`date +%F`
-cp profiles.json $root/backup/profiles.json_`date +%F`
+cp data/images.json $root/backup/images.json_`date +%F`
+cp data/profiles.json $root/backup/profiles.json_`date +%F`
 
-cd $root/images/
+cd $root/images/original/
 wget -ci $root/images.txt
 
 cd $root

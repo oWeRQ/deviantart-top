@@ -1,21 +1,12 @@
 <?php
 
-$images_by_author = json_decode(file_get_contents('images_by_author.json'), true);
-
-$images = array();
-foreach ($images_by_author as $author_images) {
-	foreach ($author_images as $image) {
-		$images[$image['id']] = $image;
-	}
-}
-
-file_put_contents('images_with_galleries.json', json_encode($images));
+$images = json_decode(file_get_contents('data/images.json'), true);
 
 $newImages = array();
-$existImages = array_flip(glob('images/*.*'));
+$existImages = array_flip(glob('images/original/*'));
 
 foreach ($images as $image) {
-	$filename = 'images/'.$image['filename'];
+	$filename = 'images/original/'.$image['filename'];
 
 	if (file_exists($filename)) {
 		unset($existImages[$filename]);

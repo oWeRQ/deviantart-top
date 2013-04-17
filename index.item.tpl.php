@@ -22,7 +22,7 @@
 	<ul class="b-inline b-images">
 		<? foreach ($author['images'] as $image): ?>
 			<li>
-				<a id="image_<?=$image['id']?>" class="showInGallery" href="images/<?=$image['filename']?>" data-big="<?=$image['page']?>" target="_blank" title="<?=$image['title']?>" data-galleries="<?=join(', ', $image['galleries'])?>" data-id="<?=$image['id']?>">
+				<a id="image_<?=$image['id']?>" class="showInGallery" href="images/original/<?=$image['filename']?>" data-big="<?=$image['page']?>" target="_blank" title="<?=$image['title']?>" data-galleries="<?=join(', ', $image['galleries'])?>" data-id="<?=$image['id']?>">
 					<img src="images/mythumbs/<?=$image['filename']?>">
 				</a>
 				<a class="similar" href="similar.php?id=<?=$image['id']?>" target="_blank"></a>

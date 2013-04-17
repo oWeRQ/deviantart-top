@@ -7,13 +7,8 @@ $da = new Deviantart;
 $galleries = $da->getFavGalleries(16413375, 21);
 
 $images = array();
-$images_by_author = array();
 $newImages = array();
-$newMiddle = array();
-$newThumbs = array();
 $newImageFiles = array();
-$newMiddleFiles = array();
-$newThumbFiles = array();
 
 foreach ($galleries as $gallery) {
 	$t = microtime(true);
@@ -27,23 +22,13 @@ foreach ($galleries as $gallery) {
 	foreach ($favs as $fav) {
 		$filename = pathinfo(parse_url($fav['image'], PHP_URL_PATH), PATHINFO_BASENAME);
 
-		if (!file_exists('images/'.$filename) && !in_array($filename, $newImageFiles)) {
+		if (!file_exists('images/original/'.$filename) && !in_array($filename, $newImageFiles)) {
 			$newImages[] = $fav['image'];
 			$newImageFiles[] = $filename;
 		}
 
-		if (!file_exists('images/middle/'.$filename) && !in_array($filename, $newMiddleFiles)) {
-			$newMiddle[] = $fav['middle'];
-			$newMiddleFiles[] = $filename;
-		}
-
-		if (!file_exists('images/thumbs/'.$filename) && !in_array($filename, $newThumbFiles)) {
-			$newThumbs[] = $fav['thumb'];
-			$newThumbFiles[] = $filename;
-		}
-
 		if (!is_link($galleryDir.$filename))
-			symlink('../../images/'.$filename, $galleryDir.$filename);
+			symlink('../../images/original/'.$filename, $galleryDir.$filename);
 
 		if (isset($images[$fav['id']])) {
 			$images[$fav['id']]['galleries'][] = $gallery['title'];
@@ -57,12 +42,4 @@ foreach ($galleries as $gallery) {
 }
 
 file_put_contents('images.txt', implode("\n", $newImages));
-file_put_contents('middle.txt', implode("\n", $newMiddle));
-file_put_contents('thumbs.txt', implode("\n", $newThumbs));
-file_put_contents('images_with_galleries.json', json_encode($images));
-
-foreach ($images as $image) {
-	$images_by_author[$image['author']][$image['id']] = $image;
-}
-
-file_put_contents('images_by_author.json', json_encode($images_by_author));
+file_put_contents('data/images.json', json_encode($images));

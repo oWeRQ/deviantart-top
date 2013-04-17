@@ -55,7 +55,7 @@ $(function(){
 				var link = $('<a>', {
 					id: 'image_'+image.id,
 					'class': 'showInGallery',
-					href: 'images/'+image.filename,
+					href: 'images/original/'+image.filename,
 					target: '_blank',
 					title: image.title,
 					'data-big': image.page,
@@ -68,6 +68,11 @@ $(function(){
 				var li = $('<li>', {
 					append: [
 						link,
+						$('<a>', {
+							'class': 'similar',
+							href: 'similar.php?id='+image.id,
+							target: '_blank'
+						}),
 						$('<a>', {
 							'class': 'update',
 							href: '#'

@@ -24,8 +24,13 @@ function wilson_score($pos, $n) {
 	return ($phat + $z*$z/(2*$n) - $z*sqrt(($phat*(1-$phat) + $z*$z/(4*$n))/$n)) / (1 + $z*$z/$n);
 }
 
-$images_by_author = json_decode(file_get_contents('images_by_author.json'), true);
-$profiles = json_decode(file_get_contents('profiles.json'), true);
+$profiles = json_decode(file_get_contents('data/profiles.json'), true);
+
+$images = json_decode(file_get_contents('data/images.json'), true);
+$images_by_author = array();
+foreach ($images as $image) {
+	$images_by_author[$image['author']][$image['id']] = $image;
+}
 
 $deviantart = new Deviantart;
 $galleries = $deviantart->getFavGalleries(16413375, 21);

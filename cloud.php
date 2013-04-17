@@ -1,6 +1,6 @@
 <?php
 
-$count = 200;
+$count = 100;
 
 $minSize = 0.75;
 $maxSize = 2.25;
@@ -8,7 +8,7 @@ $unit = 'em';
 
 $query = @$_REQUEST['q'];
 
-$keywords = json_decode(file_get_contents('keywords.json'), true);
+$keywords = json_decode(file_get_contents('data/keywords.json'), true);
 
 $keywords = array_slice($keywords, 0, $count, true);
 
@@ -24,7 +24,7 @@ ksort($keywords);
 	<title>devianART Cloud</title>
 	<style>
 		html {
-			font: 11pt sans-serif;
+			font: 12pt sans-serif;
 		}
 		a {
 			text-decoration: none;
@@ -49,11 +49,11 @@ ksort($keywords);
 <body>
 	<div class="cloud">
 		<?
-		$constant = log($max-($min-1)) / ($maxSize-$minSize);
+		$constant = log($max-$min) / ($maxSize-$minSize);
 		?>
 		<? foreach ($keywords as $keyword => $images): ?>
 			<?
-			$size = log(count($images)-($min-1)) / $constant + $minSize;
+			$size = log(count($images)-$min) / $constant + $minSize;
 			?>
 			<a href=".?title=<?=$keyword?>" target="_blank" title="Count: <?=count($images)?>" class="<?=$keyword===$query?'active':''?>" style="font-size:<?=round($size, 2)?><?=$unit?>"><?=$keyword?></a>
 		<? endforeach ?>

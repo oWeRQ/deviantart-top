@@ -67,7 +67,7 @@ class Deviantart
 
 		if ($method === 'get') {
 			$url = $parts['scheme'].'://'.$parts['host'].$parts['path'].'?'.$parts['query'];
-			$data_file = 'cache/'.md5($url).'.json';
+			$data_file = 'cache/difi/'.md5($url).'.json';
 		} else {
 			$url = $parts['scheme'].'://'.$parts['host'].$parts['path'];
 		}
@@ -195,6 +195,7 @@ class Deviantart
 		$linkRegex = '#<a class="thumb[\s\w]*" href="(http://([^.]+)[^"]+)#';
 		$thumbRegex = '#data-src="(http://([^.]+)([^"]+))#';
 		$titleRegex = '#title="([^"]*)#';
+		$titlePartsRegex = '#(.+) by (.)([-\w]+), (\w+ \d+, \d+) in (.+)#u';
 
 		$favs = array();
 
@@ -215,6 +216,7 @@ class Deviantart
 						&& preg_match($thumbRegex, $html, $thumbMatch))
 					{
 						preg_match($titleRegex, $html, $titleMatch);
+						preg_match($titlePartsRegex, html_entity_decode($titleMatch[1]), $titlePartsMatch);
 
 						//$imageUrl = str_replace('/150/', '/', $thumbMatch[1]);
 						$thumbPath = parse_url($thumbMatch[1], PHP_URL_PATH);
@@ -224,7 +226,11 @@ class Deviantart
 
 						$favs[] = array(
 							'id' => $id,
-							'title' => $titleMatch[1],
+							'title' => $titlePartsMatch[1],
+							'usersymbol' => $titlePartsMatch[2],
+							'nickname' => $titlePartsMatch[3],
+							'date' => date('Y-m-d', strtotime($titlePartsMatch[4])),
+							'categories' => explode(' > ', $titlePartsMatch[5]),
 							'page' => $linkMatch[1],
 							'author' => $linkMatch[2],
 							'thumb' => $thumbMatch[1],

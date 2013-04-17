@@ -2,16 +2,16 @@
 
 root=$PWD
 
-find $root/images/ -type f -size 0 -exec rm {} \;
-
 php clean_images.php
+
+find $root/images/ -type f -size 0 -exec rm {} \;
 
 while read file
 do
 	mv $file images/trash/
 done < trash_images.txt
 
-cd $root/images/
+cd $root/images/original/
 wget --no-verbose -ci $root/images.txt
 
 cd $root

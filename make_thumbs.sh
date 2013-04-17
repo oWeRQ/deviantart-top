@@ -2,7 +2,7 @@
 
 thumbsdir=images/mythumbs
 
-for imagepath in images/*.jpg
+for imagepath in images/original/*.jpg
 do
 	thumbpath=$thumbsdir/`basename $imagepath`
 
@@ -11,7 +11,7 @@ do
 	fi
 done
 
-for imagepath in images/*.png images/*.gif
+for imagepath in images/original/*.png images/original/*.gif
 do
 	thumbpath=$thumbsdir/`basename $imagepath`
 

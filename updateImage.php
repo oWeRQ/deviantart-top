@@ -5,13 +5,13 @@ error_reporting(E_ALL);
 require_once 'deviantart.class.php';
 Devianart::$silent = true;
 
-while(file_exists('images_by_author.json.lock'))
+while(file_exists('data/images.json.lock'))
 	usleep(500);
 
-touch('images_by_author.json.lock');
+touch('data/images.json.lock');
 
-$images_by_author = json_decode(file_get_contents('images_by_author.json'), true);
-$profiles = json_decode(file_get_contents('profiles.json'), true);
+$images = json_decode(file_get_contents('data/images.json'), true);
+$profiles = json_decode(file_get_contents('data/profiles.json'), true);
 
 $devianart = new Devianart;
 
@@ -19,7 +19,6 @@ $user_id = 16413375;
 $galleries_data = $devianart->getFavGalleries($user_id, 21);
 
 $action = @$_REQUEST['action'];
-$username = @$_REQUEST['username'];
 
 if ($action === 'setGalleries')
 {
@@ -29,7 +28,7 @@ if ($action === 'setGalleries')
 	if (empty($galleries) || $image_id === 0)
 		die();
 
-	$image = &$images_by_author[$username][$image_id];
+	$image = &$images[$image_id];
 
 	$add_galleries = array_diff($galleries, $image['galleries']);
 	$remove_galleries = array_diff($image['galleries'], $galleries);
@@ -65,7 +64,7 @@ if ($action === 'setGalleries')
 	foreach ($galleries_data as $gallery_data) {
 		if ($gallery_id === $gallery_data['galleryid']) {
 			foreach ($image_ids as $image_id) {
-				$image = &$images_by_author[$username][$image_id];
+				$image = &$images[$image_id];
 
 				$pos = array_search($gallery_data['title'], $image['galleries']);
 
@@ -94,8 +93,8 @@ if ($action === 'setGalleries')
 	$image_ids = (array)@$_REQUEST['images'];
 
 	foreach ($image_ids as $image_id) {
-		$images[] = $images_by_author[$username][$image_id];
-		unset($images_by_author[$username][$image_id]);
+		$images[] = $images[$image_id];
+		unset($images[$image_id]);
 
 		$devianart->toggleFavourite($image_id);
 	}
@@ -105,6 +104,6 @@ if ($action === 'setGalleries')
 	));
 }
 
-file_put_contents('images_by_author.json', json_encode($images_by_author));
+file_put_contents('data/images.json', json_encode($images));
 
-unlink('images_by_author.json.lock');
+unlink('data/images.json.lock');

@@ -1,6 +1,6 @@
 <?php
 
-$images = json_decode(file_get_contents('images_with_galleries.json'), true);
+$images = json_decode(file_get_contents('data/images.json'), true);
 
 $keywords = array();
 
@@ -15,4 +15,4 @@ foreach ($images as $image) {
 
 arsort($keywords);
 
-file_put_contents('keywords.json', json_encode($keywords));
+file_put_contents('data/keywords.json', json_encode($keywords));

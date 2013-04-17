@@ -11,7 +11,7 @@
 <div id="container" style="width:100%; height:800px;"></div>
 <?php 
 
-$history = json_decode(file_get_contents('../galleries_history.json'), true);
+$history = json_decode(file_get_contents('../data/galleries_history.json'), true);
 
 $categories = array_keys($history);
 $series = array();

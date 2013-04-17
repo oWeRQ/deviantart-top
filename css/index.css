@@ -261,6 +261,7 @@ input[type=submit].disabled {
 	color: white;
 	background: rgba(0,0,0,.5);
 	opacity: 0;
+	z-index: 2;
 }
 .b-images .similar:after {
 	content: '\223C';
@@ -281,6 +282,7 @@ input[type=submit].disabled {
 	color: white;
 	background: rgba(0,0,0,.5);
 	opacity: 0;
+	z-index: 2;
 }
 .b-images .update:after {
 	content: '\270E';

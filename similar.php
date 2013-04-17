@@ -9,15 +9,15 @@ $same_galleries = isset($_REQUEST['same_galleries']);
 
 $simular = array();
 
-$images = json_decode(file_get_contents('images_with_galleries.json'), true);
-$sigs = json_decode(file_get_contents('images_sigs.json'), true);
+$images = json_decode(file_get_contents('data/images.json'), true);
+$sigs = json_decode(file_get_contents('data/images_sigs.json'), true);
 
 if ($image_id) {
 	$time_start = microtime(true);
 
 	if (ctype_digit($image_id)) {
 		$find_image = $images[$image_id];
-		$find_image_original = 'images/'.$find_image['filename'];
+		$find_image_original = 'images/original/'.$find_image['filename'];
 		$find_image_url = 'images/mythumbs/'.$find_image['filename'];
 		$find_image_sig = 'images/sig/'.$find_image['filename'].'.png';
 
@@ -152,7 +152,7 @@ if ($image_id) {
 		<h2>Simular</h2>
 		<div class="images-list">
 		<? foreach ($simular as $image): ?>
-			<a class="image" href="?id=<?=$image['id']?>">
+			<a class="image" href="?id=<?=$image['id']?>" title="<?=$image['title']?>">
 				<img src="images/mythumbs/<?=$image['filename']?>">
 				<img class="sig" src="images/sig/<?=$image['filename']?>.png">
 				<span class="diff" title="&#916;<?=round($diff[$image['id']])?>"><?=100-round($diff[$image['id']]*100)?>%</span>
