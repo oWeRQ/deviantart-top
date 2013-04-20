@@ -57,7 +57,7 @@ if ($action === 'setGalleries')
 		'image' => $image,
 	));
 } elseif ($action === 'addGallery' || $action === 'removeGallery') {
-	$images = array();
+	$updateImages = array();
 	$gallery_id = (int)@$_REQUEST['gallery'];
 	$image_ids = (array)@$_REQUEST['images'];
 
@@ -80,27 +80,27 @@ if ($action === 'setGalleries')
 					}
 				}
 
-				$images[] = $image;
+				$updateImages[] = $image;
 			}
 		}
 	}
 
 	echo json_encode(array(
-		'images' => $images,
+		'images' => $updateImages,
 	));
 } elseif ($action === 'deleteFavorites') {
-	$images = array();
+	$updateImages = array();
 	$image_ids = (array)@$_REQUEST['images'];
 
 	foreach ($image_ids as $image_id) {
-		$images[] = $images[$image_id];
+		$updateImages[] = $images[$image_id];
 		unset($images[$image_id]);
 
 		$devianart->toggleFavourite($image_id);
 	}
 
 	echo json_encode(array(
-		'images' => $images,
+		'images' => $updateImages,
 	));
 }
 

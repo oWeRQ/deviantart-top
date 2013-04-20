@@ -101,26 +101,34 @@ function getFavImages($username) {
 		return true;
 	}));
 
-	if (empty($checked_galleries))
-		return $images;
+	if (!empty($checked_galleries)) {
+		$images = array_values(array_filter($images, function($image){
+			global $checked_galleries;
+			global $condition;
+			global $intersect;
 
-	return array_values(array_filter($images, function($image){
-		global $checked_galleries;
-		global $condition;
-		global $intersect;
+			$diff_count = count(array_diff($checked_galleries, $image['galleries']));
+			$checked_count = count($checked_galleries);
 
-		$diff_count = count(array_diff($checked_galleries, $image['galleries']));
-		$checked_count = count($checked_galleries);
+			if ($condition == 'or')
+				return $diff_count < $checked_count;
+			elseif ($condition == 'and')
+				return $diff_count === 0;
+			elseif ($condition == 'only')
+				return $diff_count === 0 && $checked_count === count($image['galleries']);
+			elseif ($condition == 'xor')
+				return $diff_count === $checked_count-$intersect;
+		}));
+	}
 
-		if ($condition == 'or')
-			return $diff_count < $checked_count;
-		elseif ($condition == 'and')
-			return $diff_count === 0;
-		elseif ($condition == 'only')
-			return $diff_count === 0 && $checked_count === count($image['galleries']);
-		elseif ($condition == 'xor')
-			return $diff_count === $checked_count-$intersect;
-	}));
+	usort($images, function($a, $b){
+		if ($a['date'] === $b['date'])
+			return 0;
+
+		return $a['date'] > $b['date'] ? -1 : 1;
+	});
+
+	return $images;
 }
 
 if (!empty($username)) {

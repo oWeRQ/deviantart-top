@@ -5,6 +5,12 @@ a {
 	text-decoration: none;
 	color: #49e;
 }
+a:hover {
+	color: #27c;
+}
+a.active {
+	color: #999;
+}
 h3 {
 	margin: 8px 0;
 	color: #666;
@@ -216,6 +222,7 @@ input[type=submit].disabled {
 	height: 120px;
 	background: #ddd;
 }
+
 .b-images .selected {
 	background: #36c;
 	outline: 3px solid #36c;
@@ -232,6 +239,15 @@ input[type=submit].disabled {
 .b-images .showInGallery {
 	display: block;
 }
+.b-images .showInGallery:before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	box-shadow: 0 0 10px rgba(0,0,0,.5) inset;
+}
 .b-images .showInGallery:after {
 	content: attr(data-galleries);
 	display: block;
@@ -244,6 +260,9 @@ input[type=submit].disabled {
 	color: white;
 	background: rgba(0,0,0,.5);
 	opacity: 0;
+}
+.b-images li:hover .showInGallery:before {
+	display: none;
 }
 .b-images li:hover .showInGallery:after {
 	transition: opacity 200ms;
@@ -306,9 +325,10 @@ input[type=submit].disabled {
 	text-align: center;
 	color: #777;
 	background: #ccc;
-	box-shadow: inset 0 3px 8px #999;
+	box-shadow: inset 0 0 10px #999;
 }
 .moreImages:hover {
+	color: #666;
 	box-shadow: none;
 }
 

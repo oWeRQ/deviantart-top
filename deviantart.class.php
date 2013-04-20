@@ -226,6 +226,7 @@ class Deviantart
 
 						$favs[] = array(
 							'id' => $id,
+							'titlefull' => $titleMatch[1],
 							'title' => $titlePartsMatch[1],
 							'usersymbol' => $titlePartsMatch[2],
 							'nickname' => $titlePartsMatch[3],
