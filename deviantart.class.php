@@ -44,10 +44,19 @@ class Deviantart
 		return $counts;
 	}
 
-	function sendCall($callObj, $callMethod, $callParams, $method = 'get', $try = 3)
+	function sendCall($callObject, $callMethod, $callParams, $method = 'get', $try = 3)
 	{
-		$callStr = '"'.$callObj.'","'.$callMethod.'",["'.join('","', $callParams).'"]';
+		return $this->sendCalls(array(
+			array(
+				'object' => $callObject,
+				'method' => $callMethod,
+				'params' => $callParams,
+			),
+		), $method, $try)[0]['response']['content'];
+	}
 
+	function sendCalls(array $calls, $method = 'get', $try = 3)
+	{
 		$parts = array(
 			'scheme' => 'http',
 			'host' => 'my.deviantart.com',
@@ -56,7 +65,9 @@ class Deviantart
 		);
 
 		$params = array(
-			'c' => array($callStr),
+			'c' => array_map(function($call){
+				return '"'.$call['object'].'","'.$call['method'].'",["'.join('","', $call['params']).'"]';
+			}, $calls),
 			't' => 'json',
 		);
 
@@ -94,14 +105,14 @@ class Deviantart
 			if (--$try > 0) {
 				echo "try: $try\n";
 				unlink($data_file);
-				return $this->sendCall($callObj, $callMethod, $callParams, $method, $try);
+				return $this->sendCalls($calls, $method, $try);
 			}
 
 			echo "error: ".$json['DiFi']['response']['error']."\n";
 			die();
 		}
 
-		return $json['DiFi']['response']['calls'][0]['response']['content'];
+		return $json['DiFi']['response']['calls'];
 	}
 
 	function sendPost($url, $data)
@@ -189,14 +200,63 @@ class Deviantart
 		), 'post');
 	}
 
-	function getFavs($user, $offset = 0)
+	function parsePageResource($resource)
 	{
+		$ismatureRegex = '#class="thumb ismature"#';
 		$instorageRegex = '#class="instorage"#';
 		$linkRegex = '#<a class="thumb[\s\w]*" href="(http://([^.]+)[^"]+)#';
 		$thumbRegex = '#data-src="(http://([^.]+)([^"]+))#';
 		$titleRegex = '#title="([^"]*)#';
 		$titlePartsRegex = '#(.+) by (.)([-\w]+), (\w+ \d+, \d+) in (.+)#u';
 
+		list(, $id, $html) = $resource;
+
+		$ismature = preg_match($ismatureRegex, $html) !== 0;
+		$instorage = preg_match($instorageRegex, $html) !== 0;
+
+		if (preg_match($instorageRegex, $html) === 0) {
+			if (preg_match($linkRegex, $html, $linkMatch)
+				&& preg_match($thumbRegex, $html, $thumbMatch))
+			{
+				preg_match($titleRegex, $html, $titleMatch);
+				preg_match($titlePartsRegex, html_entity_decode($titleMatch[1]), $titlePartsMatch);
+
+				//$imageUrl = str_replace('/150/', '/', $thumbMatch[1]);
+				$thumbPath = parse_url($thumbMatch[1], PHP_URL_PATH);
+				$imageUrl = 'http://fc0'.rand(0, 9).'.deviantart.net'.preg_replace('#^(/\w+)/150/#', '\1/', $thumbPath);
+				$middleUrl = 'http://fc0'.rand(0, 9).'.deviantart.net'.preg_replace('#^(/\w+)/150/#', '\1/300W/', $thumbPath);
+				$filename = pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_BASENAME);
+
+				return array(
+					'id' => $id,
+					'ismature' => $ismature,
+					'instorage' => $instorage,
+					'titlefull' => $titleMatch[1],
+					'title' => $titlePartsMatch[1],
+					'usersymbol' => $titlePartsMatch[2],
+					'nickname' => $titlePartsMatch[3],
+					'date' => date('Y-m-d', strtotime($titlePartsMatch[4])),
+					'categories' => explode(' > ', $titlePartsMatch[5]),
+					'page' => $linkMatch[1],
+					'author' => $linkMatch[2],
+					'thumb' => $thumbMatch[1],
+					'image' => $imageUrl,
+					'middle' => $middleUrl,
+					'filename' => $filename,
+				);
+			}
+			else
+			{
+				echo "\nERROR PARSE:";
+				echo "\n============\n";
+				echo $html;
+				echo "\n";
+			}
+		}
+	}
+
+	function getFavs($user, $offset = 0)
+	{
 		$favs = array();
 
 		$content = $this->getFavPage($user, 0);
@@ -206,48 +266,7 @@ class Deviantart
 			//sleep(1);
 			foreach ($content['resources'] as $resource)
 			{
-				list(, $id, $html) = $resource;
-				//print_r($resource);die();
-
-				$instorage = preg_match($instorageRegex, $html) !== 0;
-
-				if (preg_match($instorageRegex, $html) === 0) {
-					if (preg_match($linkRegex, $html, $linkMatch)
-						&& preg_match($thumbRegex, $html, $thumbMatch))
-					{
-						preg_match($titleRegex, $html, $titleMatch);
-						preg_match($titlePartsRegex, html_entity_decode($titleMatch[1]), $titlePartsMatch);
-
-						//$imageUrl = str_replace('/150/', '/', $thumbMatch[1]);
-						$thumbPath = parse_url($thumbMatch[1], PHP_URL_PATH);
-						$imageUrl = 'http://fc0'.rand(0, 9).'.deviantart.net'.preg_replace('#^(/\w+)/150/#', '\1/', $thumbPath);
-						$middleUrl = 'http://fc0'.rand(0, 9).'.deviantart.net'.preg_replace('#^(/\w+)/150/#', '\1/300W/', $thumbPath);
-						$filename = pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_BASENAME);
-
-						$favs[] = array(
-							'id' => $id,
-							'titlefull' => $titleMatch[1],
-							'title' => $titlePartsMatch[1],
-							'usersymbol' => $titlePartsMatch[2],
-							'nickname' => $titlePartsMatch[3],
-							'date' => date('Y-m-d', strtotime($titlePartsMatch[4])),
-							'categories' => explode(' > ', $titlePartsMatch[5]),
-							'page' => $linkMatch[1],
-							'author' => $linkMatch[2],
-							'thumb' => $thumbMatch[1],
-							'image' => $imageUrl,
-							'middle' => $middleUrl,
-							'filename' => $filename,
-						);
-					}
-					else
-					{
-						echo "\nERROR PARSE:";
-						echo "\n============\n";
-						echo $html;
-						echo "\n";
-					}
-				}
+				$favs[] = $this->parsePageResource($resource);
 			}
 
 			if (count($content['resources']) < 24)

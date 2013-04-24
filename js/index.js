@@ -460,7 +460,7 @@ $(function(){
 	authorsList.on('click', '.update', function(e){
 		e.preventDefault();
 
-		updateControl.show($(this).prev('.showInGallery'));
+		updateControl.show($(this).siblings('.showInGallery'));
 	});
 
 	var checkMenu = {
@@ -536,6 +536,19 @@ $(function(){
 		}
 	};
 	checkMenu.init();
+
+	authorsList.on('click', '.actionCheckAll input', function(e){
+		//e.preventDefault();
+		e.stopPropagation();
+
+		var checkbox = $(this);
+		var items = checkbox.closest('.b-author').find('.showInGallery');
+
+		if (items.is('.selected'))
+			this.checked = false;
+
+		items.toggleClass('selected', this.checked);
+	});	
 
 	authorsList.on('click', '.actionCheckAll', function(e){
 		e.preventDefault();

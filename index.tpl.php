@@ -22,6 +22,10 @@
 
 <div class="l-sidebar">
 	<form>
+		<div class="row">
+			<input type="text" name="title" value="<?=$title?>" placeholder="Search" list="searchList"><a href="#" class="clearInput"></a>
+		</div>
+
 		<h3>Collections</h3>
 		<div class="checkboxes">
 			<div class="controls">
@@ -77,20 +81,8 @@
 			<a href="#" class="clearInput"></a>
 		</div>
 
-		<h3>Author</h3>
-		<div class="row">
-			<input type="text" name="username" value="<?=$username?>" list="authorsList">
-			<a href="#" class="clearInput"></a>
-		</div>
-
-		<h3>Title</h3>
-		<div class="row">
-			<input type="text" name="title" value="<?=$title?>">
-			<a href="#" class="clearInput"></a>
-		</div>
-
 		<h3>Sort</h3>
-		<div class="row">
+		<div class="row b-inline">
 			<select name="sort">
 				<? foreach (array(
 					'score'=>'Score',
@@ -102,6 +94,10 @@
 					<option value="<?=$value?>" <?if($value==$sort):?>selected<?endif?>><?=$name?></option>
 				<? endforeach ?>
 			</select>
+			<select name="sortDir">
+				<option value="1" <?if($sortDir==1):?>selected<?endif?>>Desc</option>
+				<option value="-1" <?if($sortDir==-1):?>selected<?endif?>>Asc</option>
+			</select>
 		</div>
 		
 		<div class="row actions">
@@ -111,7 +107,7 @@
 </div>
 
 <div class="l-content">
-	<? if ($top && $page > 1): ?>
+	<? if ($page > 1): ?>
 		<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=$title?>&amp;page=<?=$page-1?>" class="m-button showPrev">Show Prev</a>
 	<? endif ?>
 
@@ -128,9 +124,12 @@
 	<? endif ?>
 </div>
 
-<datalist id="authorsList">
+<datalist id="searchList">
+	<? foreach (array_slice($keywords, 0, 200, true) as $keyword => $count): ?>
+		<option value="<?=$keyword?>">
+	<? endforeach ?>
 	<? foreach ($profiles as $profile): ?>
-		<option value="<?=$profile['username']?>">
+		<option value="by:<?=$profile['username']?>">
 	<? endforeach ?>
 </datalist>
 

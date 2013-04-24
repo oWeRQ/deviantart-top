@@ -1,45 +1,77 @@
 <?php
 
 require_once 'deviantart.class.php';
+Deviantart::$cache_time = 3600*2;
+$deviantart = new Deviantart;
 
-$da = new Deviantart;
+$username = 'oWeRQ';
+$userid = 16413375;
+$perPage = 24;
+$perRequest = 40;
 
-$galleries = $da->getFavGalleries(16413375, 21);
-
+$update_galleries = false;
 $images = array();
-$newImages = array();
-$newImageFiles = array();
+
+if ($argc > 1) {	
+	$update_galleries = array_map('strtolower', array_slice($argv, 1));
+	$images = json_decode(file_get_contents('data/images.json'), true);
+}
+
+$galleries = $deviantart->getFavGalleries($userid);
 
 foreach ($galleries as $gallery) {
+	if ($update_galleries && !in_array(strtolower($gallery['title']), $update_galleries))
+		continue;
+
 	$t = microtime(true);
 
-	$favs = $da->getFavs('oWeRQ/'.$gallery['galleryid']);
+	$offset = 0;
 
-	$galleryDir = 'galleries/'.$gallery['title'].'/';
-	if (!file_exists($galleryDir))
-		mkdir($galleryDir, 0777, true);
+	$pages = ceil($gallery['approx_total'] / $perPage);
+	$maxOffset = ($pages-1) * $perPage;
 
-	foreach ($favs as $fav) {
-		$filename = pathinfo(parse_url($fav['image'], PHP_URL_PATH), PATHINFO_BASENAME);
+	while ($offset < $maxOffset) {
+		$calls = array();
 
-		if (!file_exists('images/original/'.$filename) && !in_array($filename, $newImageFiles)) {
-			$newImages[] = $fav['image'];
-			$newImageFiles[] = $filename;
+		for ($i = 0; $i < $perRequest; $i++) {
+			$calls[] = array(
+				'object' => "Resources",
+				'method' => "htmlFromQuery",
+				'params' => array(
+					"favby:$username/".$gallery['galleryid'],
+					$offset,
+					$perPage,
+					"thumb150",
+					"artist:0,title:1",
+				),
+			);
+
+			if ($offset >= $maxOffset)
+				break;
+
+			$offset += $perPage;
 		}
 
-		if (!is_link($galleryDir.$filename))
-			symlink('../../images/original/'.$filename, $galleryDir.$filename);
+		$requests = $deviantart->sendCalls($calls);
 
-		if (isset($images[$fav['id']])) {
-			$images[$fav['id']]['galleries'][] = $gallery['title'];
-		} else {
-			$images[$fav['id']] = $fav;
-			$images[$fav['id']]['galleries'] = array($gallery['title']);
+		foreach ($requests as $request) {
+			foreach ($request['response']['content']['resources'] as $resource) {
+				$image = $deviantart->parsePageResource($resource);
+
+				if (isset($images[$image['id']])) {
+					$images[$image['id']]['galleries'][] = $gallery['title'];
+					$images[$image['id']]['galleries'] = array_values(array_unique($images[$image['id']]['galleries']));
+				} else {
+					$image['galleries'] = array($gallery['title']);
+					$images[$image['id']] = $image;
+				}
+			}
 		}
 	}
 
-	echo $gallery['title'].': '.(microtime(true)-$t)."s\n";
+	echo 'done: '.$gallery['title'].': '.(microtime(true)-$t)."s\n";
 }
 
-file_put_contents('images.txt', implode("\n", $newImages));
+unset($images['']);
+
 file_put_contents('data/images.json', json_encode($images));

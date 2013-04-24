@@ -1,5 +1,7 @@
 <?php
 
+$maxCalls = 40;
+
 error_reporting(E_ALL);
 
 require_once 'deviantart.class.php';
@@ -13,12 +15,14 @@ touch('data/images.json.lock');
 $images = json_decode(file_get_contents('data/images.json'), true);
 $profiles = json_decode(file_get_contents('data/profiles.json'), true);
 
-$devianart = new Devianart;
+$deviantart = new Deviantart;
 
 $user_id = 16413375;
-$galleries_data = $devianart->getFavGalleries($user_id, 21);
+$galleries_data = $deviantart->getFavGalleries($user_id, 21);
 
 $action = @$_REQUEST['action'];
+
+$calls = array();
 
 if ($action === 'setGalleries')
 {
@@ -36,7 +40,7 @@ if ($action === 'setGalleries')
 	foreach ($add_galleries as $gallery) {
 		foreach ($galleries_data as $gallery_data) {
 			if ($gallery === $gallery_data['title']) {
-				$devianart->addFavGalleries($user_id, $gallery_data['galleryid'], $image_id);
+				$deviantart->addFavGalleries($user_id, $gallery_data['galleryid'], $image_id);
 				break;
 			}
 		}
@@ -45,7 +49,7 @@ if ($action === 'setGalleries')
 	foreach ($remove_galleries as $gallery) {
 		foreach ($galleries_data as $gallery_data) {
 			if ($gallery === $gallery_data['title']) {
-				$devianart->removeFavGalleries($user_id, $gallery_data['galleryid'], $image_id);
+				$deviantart->removeFavGalleries($user_id, $gallery_data['galleryid'], $image_id);
 				break;
 			}
 		}
@@ -71,12 +75,36 @@ if ($action === 'setGalleries')
 				if ($action === 'removeGallery') {
 					if ($pos !== false) {
 						array_splice($image['galleries'], $pos, 1);
-						$devianart->removeFavGalleries($user_id, $gallery_id, $image_id);
+						//$deviantart->removeFavGalleries($user_id, $gallery_id, $image_id);
+						$calls[] = array(
+							'object' => "Gallections",
+							'method' => "remove_resource",
+							'params' => array(
+								$user_id,
+								21,
+								$gallery_id,
+								1,
+								$image_id,
+							),
+						);
 					}
 				} else {
 					if ($pos === false) {
 						$image['galleries'][] = $gallery_data['title'];
-						$devianart->addFavGalleries($user_id, $gallery_id, $image_id);
+						//$deviantart->addFavGalleries($user_id, $gallery_id, $image_id);
+						$calls[] = array(
+							'object' => "Aggregations",
+							'method' => "add_resource",
+							'params' => array(
+								$user_id,
+								"551235953",
+								21,
+								$gallery_id,
+								1,
+								$image_id,
+								0,
+							),
+						);
 					}
 				}
 
@@ -96,13 +124,23 @@ if ($action === 'setGalleries')
 		$updateImages[] = $images[$image_id];
 		unset($images[$image_id]);
 
-		$devianart->toggleFavourite($image_id);
+		//$deviantart->toggleFavourite($image_id);
+		$calls[] = array(
+			'object' => "Deviation",
+			'method' => "Favourite",
+			'params' => array(
+				$image_id,
+			),
+		); 
 	}
 
 	echo json_encode(array(
 		'images' => $updateImages,
 	));
 }
+
+if (!empty($calls))
+	$deviantart->sendCalls($calls, 'post');
 
 file_put_contents('data/images.json', json_encode($images));
 

@@ -1,6 +1,11 @@
 html {
 	font: 13px Arial, sans-serif;
 }
+body {
+	margin: 10px;
+	margin-left: 210px;
+}
+
 a {
 	text-decoration: none;
 	color: #49e;
@@ -134,7 +139,8 @@ input[type=submit].disabled {
 	margin-right: -4px;
 }
 .row.b-inline label,
-.row.b-inline input[type=text] {
+.row.b-inline input[type=text],
+.row.b-inline select {
 	display: inline-block;
 	width: 80px;
 }
@@ -171,13 +177,14 @@ input[type=submit].disabled {
 .l-sidebar input.exclude:checked + label input {
 	opacity: .4;
 }
-.l-content {
-	margin-left: 200px;
+.l-sidebar select {
+	width: 100%;
 }
+
 .b-inline {
 	letter-spacing: -0.31em; /* webkit: collapse white-space between units */
 	*letter-spacing: normal; /* reset IE < 8 */
-	word-spacing: -0.43em; /* IE < 8 && gecko: collapse white-space between units */
+	/*word-spacing: -0.43em; /* IE < 8 && gecko: collapse white-space between units */
 }
 .b-inline > * {
 	display: inline-block;
@@ -237,6 +244,8 @@ input[type=submit].disabled {
 	z-index: 1;
 }
 .b-images .showInGallery {
+	overflow: hidden;
+	position: relative;
 	display: block;
 }
 .b-images .showInGallery:before {
@@ -252,8 +261,9 @@ input[type=submit].disabled {
 	content: attr(data-galleries);
 	display: block;
 	position: absolute;
-	padding: 4px 8px;
-	bottom: 0;
+	padding: 5px 8px;
+	padding-right: 26px;
+	bottom: -22px;
 	left: 0;
 	right: 0;
 	font-size: 12px;
@@ -262,16 +272,19 @@ input[type=submit].disabled {
 	opacity: 0;
 }
 .b-images li:hover .showInGallery:before {
-	display: none;
+	transition: opacity .5s;
+	opacity: 0;
 }
 .b-images li:hover .showInGallery:after {
-	transition: opacity 200ms;
+	transition: bottom 300ms, opacity 700ms;
+	transition-delay: 500ms;
+	bottom: 0;
 	opacity: 1;
 }
 .b-images .similar {
 	position: absolute;
 	top: 0;
-	left: 0;
+	right: 0;
 	width: 24px;
 	height: 24px;
 	line-height: 24px;
@@ -291,7 +304,7 @@ input[type=submit].disabled {
 }
 .b-images .update {
 	position: absolute;
-	top: 0;
+	bottom: 0;
 	right: 0;
 	width: 24px;
 	height: 24px;
@@ -299,7 +312,6 @@ input[type=submit].disabled {
 	font-size: 18px;
 	text-align: center;
 	color: white;
-	background: rgba(0,0,0,.5);
 	opacity: 0;
 	z-index: 2;
 }
@@ -307,7 +319,7 @@ input[type=submit].disabled {
 	content: '\270E';
 }
 .b-images li:hover .update {
-	transition: opacity 200ms;
+	transition: opacity 300ms;
 	opacity: 1;
 }
 
@@ -439,6 +451,11 @@ input[type=submit].disabled {
 }
 .updateControl .closeButton:after {
 	content: '\2716';
+}
+.updateControl .checkboxes {
+	-webkit-columns: 2 90px;
+	-moz-columns: 2 90px;
+	columns: 2 90px;
 }
 .updateControl .checkboxes label:hover {
 	background: #eee;

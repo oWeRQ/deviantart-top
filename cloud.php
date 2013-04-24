@@ -1,6 +1,6 @@
 <?php
 
-$count = 100;
+$count = 200;
 
 $minSize = 0.75;
 $maxSize = 2.25;
@@ -39,7 +39,7 @@ ksort($keywords);
 		.cloud {
 			margin: 0 auto;
 			padding: 20px;
-			width: 580px;
+			width: 720px;
 			text-align: justify;
 			word-spacing: 8px;
 			background: #f6f6f6;

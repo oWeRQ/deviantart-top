@@ -14,8 +14,10 @@ $time = microtime(true);
 $imgsec = 1;
 
 foreach ($images as $image) {
-	//if ($count === 100) break;
 	$count++;
+
+	if (!isset($image['id']))
+		continue;
 
 	$filename = 'images/mythumbs/'.$image['filename'];
 	if (file_exists($filename)) {
@@ -26,7 +28,8 @@ foreach ($images as $image) {
 		$imgsec = $count / (microtime(true) - $time);
 	}
 
-	echo "\rdone: ".round($count/$images_count*100)."% count: $count/$images_count img/sec: ".round($imgsec)." remain: ".round(($images_count-$count)/$imgsec/60).'m        ';
+	$line = "done: ".round($count/$images_count*100)."% count: $count/$images_count img/sec: ".round($imgsec)." remain: ".round(($images_count-$count)/$imgsec/60).'m        ';
+	echo "\r".str_pad($line, 80);
 
 	if ($count % 200 == 0) {
 		file_put_contents('data/images_sigs.json', json_encode($sigs));

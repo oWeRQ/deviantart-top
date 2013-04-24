@@ -3,6 +3,7 @@
 require_once 'imagesig.class.php';
 $imageSig = new ImageSig();
 
+$find_image = false;
 $image_id = @$_REQUEST['id'];
 $same_author = isset($_REQUEST['same_author']);
 $same_galleries = isset($_REQUEST['same_galleries']);
@@ -14,6 +15,9 @@ $sigs = json_decode(file_get_contents('data/images_sigs.json'), true);
 
 if ($image_id) {
 	$time_start = microtime(true);
+
+	if (ctype_digit($image_id) && !isset($sigs[$image_id]))
+		$image_id = 'images/mythumbs/'.$images[$image_id]['filename'];
 
 	if (ctype_digit($image_id)) {
 		$find_image = $images[$image_id];
@@ -58,6 +62,9 @@ if ($image_id) {
 
 	$count = 100;
 	foreach ($diff as $diff_image_id => $d) {
+		if (!isset($images[$diff_image_id]))
+			continue;
+
 		$diff_image = $images[$diff_image_id];
 
 		if ($diff_image == null)

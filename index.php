@@ -24,12 +24,13 @@ function wilson_score($pos, $n) {
 	return ($phat + $z*$z/(2*$n) - $z*sqrt(($phat*(1-$phat) + $z*$z/(4*$n))/$n)) / (1 + $z*$z/$n);
 }
 
+$keywords = json_decode(file_get_contents('data/keywords.json'), true);
 $profiles = json_decode(file_get_contents('data/profiles.json'), true);
-
 $images = json_decode(file_get_contents('data/images.json'), true);
+
 $images_by_author = array();
 foreach ($images as $image) {
-	$images_by_author[$image['author']][$image['id']] = $image;
+	@$images_by_author[$image['author']][$image['id']] = $image;
 }
 
 $deviantart = new Deviantart;
@@ -53,7 +54,17 @@ $title = (string)param('title', '');
 $sort = (string)param('sort', 'score');
 $sortDir = (int)param('sortDir', 1);
 
-$titleRegex = '#(^|\s)'.$title.'(\s|$)#ui';
+$usernameRegex = '#\s*by:([-\w]+)\s*#';
+if (preg_match($usernameRegex, $title, $titleMatch)){
+	$username = $titleMatch[1];
+}
+
+$titleCmp = preg_replace($usernameRegex, '', $title);
+$titleRegex = '#(^|\s)'.$titleCmp.'(\s|$)#ui';
+
+if ($username) {	
+	$title = trim('by:'.$username.' '.$titleCmp);
+}
 
 $topOffset = $topLimit*($page-1);
 
@@ -85,12 +96,15 @@ function getFavImages($username) {
 	global $images_by_author;
 	global $checked_galleries;
 
+	if (!isset($images_by_author[$username]))
+		return array();
+
 	$images = array_values(array_filter($images_by_author[$username], function($image){
 		global $exclude_galleries;
-		global $title;
+		global $titleCmp;
 		global $titleRegex;
 
-		if ($title && !preg_match($titleRegex, $image['title']))
+		if ($titleCmp && !preg_match($titleRegex, $image['title']))
 			return false;
 		
 		foreach ($exclude_galleries as $gallery) {

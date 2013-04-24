@@ -6,6 +6,9 @@ $newImages = array();
 $existImages = array_flip(glob('images/original/*'));
 
 foreach ($images as $image) {
+	if (!isset($image['id']))
+		continue;
+	
 	$filename = 'images/original/'.$image['filename'];
 
 	if (file_exists($filename)) {
