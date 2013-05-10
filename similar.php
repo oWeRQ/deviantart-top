@@ -123,6 +123,10 @@ if ($image_id) {
 			border-top: 2px solid #ddd;
 			border-left: 2px solid #ddd;
 		}
+		.sig img {
+			width: 32px;
+			height: 32px;
+		}
 		.diff {
 			position: absolute;
 			bottom: 0;
@@ -151,19 +155,25 @@ if ($image_id) {
 		<p>Time: <?=$time?>s</p>
 
 		<h2>Find</h2>
-		<a class="image" href="<?=$find_image_original?>" target="_blank">
-			<img src="<?=$find_image_url?>" height="120" alt="">
+		<span class="image">
+			<a href="<?=$find_image_original?>" target="_blank">
+				<img src="<?=$find_image_url?>" height="120" alt="">
+			</a>
 			<img class="sig" src="<?=$find_image_sig?>">
-		</a>
+		</span>
 
 		<h2>Simular</h2>
 		<div class="images-list">
 		<? foreach ($simular as $image): ?>
-			<a class="image" href="?id=<?=$image['id']?>" title="<?=$image['title']?>">
-				<img src="images/mythumbs/<?=$image['filename']?>">
-				<img class="sig" src="images/sig/<?=$image['filename']?>.png">
+			<span class="image">
+				<a href="<?=$image['page']?>" target="_blank" title="<?=$image['title']?>">
+					<img src="images/mythumbs/<?=$image['filename']?>">
+				</a>
+				<a class="sig" href="?id=<?=$image['id']?>" title="<?=$image['title']?>">
+					<img src="images/sig/<?=$image['filename']?>.png">
+				</a>
 				<span class="diff" title="&#916;<?=round($diff[$image['id']])?>"><?=100-round($diff[$image['id']]*100)?>%</span>
-			</a>
+			</span>
 		<? endforeach ?>
 		</div>
 	<? else: ?>
@@ -183,10 +193,14 @@ if ($image_id) {
 		];
 		foreach ($example_images as $example_image_id) {
 			?>
-			<a class="image" href="?id=<?=$example_image_id?>">
-				<img src="images/mythumbs/<?=$images[$example_image_id]['filename']?>" alt="">
-				<img class="sig" src="images/sig/<?=$images[$example_image_id]['filename']?>.png">
-			</a>
+			<span class="image">
+				<a href="?id=<?=$example_image_id?>">
+					<img src="images/mythumbs/<?=$images[$example_image_id]['filename']?>" alt="">
+				</a>
+				<a class="sig" href="?id=<?=$example_image_id?>">
+					<img src="images/sig/<?=$images[$example_image_id]['filename']?>.png">
+				</a>
+			</span>
 			<?
 		}
 		?>
@@ -197,10 +211,14 @@ if ($image_id) {
 		shuffle($rand_images);
 		foreach (array_slice($rand_images, 0, count($example_images)) as $rand_image_id) {
 			?>
-			<a class="image" href="?id=<?=$rand_image_id?>">
-				<img src="images/mythumbs/<?=$images[$rand_image_id]['filename']?>" alt="">
-				<img class="sig" src="images/sig/<?=$images[$rand_image_id]['filename']?>.png">
-			</a>
+			<span class="image">
+				<a href="?id=<?=$rand_image_id?>">
+					<img src="images/mythumbs/<?=$images[$rand_image_id]['filename']?>" alt="">
+				</a>
+				<a class="sig" href="?id=<?=$rand_image_id?>">
+					<img src="images/sig/<?=$images[$rand_image_id]['filename']?>.png">
+				</a>
+			</span>
 			<?
 		}
 		?>

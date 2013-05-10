@@ -119,7 +119,7 @@
 		</div>
 	</div>
 
-	<? if (count($authors) === $topLimit): ?>
+	<? if ($page < $pages): ?>
 		<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=$title?>&amp;page=<?=$page+1?>" class="m-button showMore">Show More</a>
 	<? endif ?>
 </div>

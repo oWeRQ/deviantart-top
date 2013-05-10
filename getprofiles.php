@@ -13,7 +13,7 @@ $profiles = array();
 
 $total = count($authors);
 foreach (array_keys($authors) as $i => $author) {
-	$line = "get profile ".($i+1)."/$total $author";
+	$line = "get profile: ".($i+1)."/$total $author";
 	echo "\r".str_pad($line, 80);
 
 	if ($profile = Deviantart::userinfo($author)) {

@@ -33,6 +33,6 @@
 		<? endforeach ?>
 	</ul>
 	<? if(count($author['images']) < $author['favourites']): ?>
-		<a href="#" class="moreImages">More images (<span class="count"><?=$author['favourites']-count($author['images'])?></span>)</a>
+		<a href="#" class="moreImages">More images (<span class="count"><?=$author['favourites']-$imagesOffset-count($author['images'])?></span>)</a>
 	<? endif ?>
 </div>

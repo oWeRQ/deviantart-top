@@ -136,30 +136,31 @@ function getFavImages($username) {
 	}
 
 	usort($images, function($a, $b){
-		if ($a['date'] === $b['date'])
-			return 0;
-
-		return $a['date'] > $b['date'] ? -1 : 1;
+		return $a['id'] > $b['id'] ? -1 : 1;
 	});
 
 	return $images;
 }
 
 if (!empty($username)) {
-	$profile = $profiles[$username];
+	$pages = 1;
+	$authors = array();
 
-	$images = getFavImages($username);
-	$favourites = count($images);
+	if (isset($profiles[$username])) {
+		$profile = $profiles[$username];
+		$images = getFavImages($username);
+		$favourites = count($images);
 
-	$authors[] = array(
-		'username' => $username,
-		'percent' => $favourites/$profile['deviations']*100,
-		'score' => score($favourites, $profile['deviations']),
-		'wilson_score' => wilson_score($favourites, $profile['deviations']),
-		'favourites' => $favourites,
-		'deviations' => $profile['deviations'],
-		'images' => array_slice($images, $imagesOffset, $imagesLimit),
-	);
+		$authors[] = array(
+			'username' => $username,
+			'percent' => $favourites/$profile['deviations']*100,
+			'score' => score($favourites, $profile['deviations']),
+			'wilson_score' => wilson_score($favourites, $profile['deviations']),
+			'favourites' => $favourites,
+			'deviations' => $profile['deviations'],
+			'images' => array_slice($images, $imagesOffset, $imagesLimit),
+		);
+	}
 } else {
 	$top = array_values(array_filter(array_map(function($profile) use($minFavs, $maxFavs, $minDevia, $imagesOffset, $imagesLimit){
 		if (isset($profile['deviations']) && $profile['deviations'] >= $minDevia) {
@@ -186,6 +187,8 @@ if (!empty($username)) {
 
 		return ($a[$sort] > $b[$sort]) ? -$sortDir : $sortDir;
 	});
+
+	$pages = ceil(count($top)/$topLimit);
 
 	$authors = array_slice($top, $topOffset, $topLimit);
 }

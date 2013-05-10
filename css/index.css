@@ -147,6 +147,7 @@ input[type=submit].disabled {
 
 .l-sidebar {
 	position: fixed;
+	overflow-x: hidden;
 	overflow-y: auto;
 	left: 0;
 	top: 0;
@@ -199,6 +200,7 @@ input[type=submit].disabled {
 }
 .b-author.m-active {
 	background: #f0f0f0;
+	border-bottom-color: #6cf;
 }
 .b-author .actions {
 	float: right;

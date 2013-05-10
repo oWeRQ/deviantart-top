@@ -214,6 +214,9 @@ class Deviantart
 		$ismature = preg_match($ismatureRegex, $html) !== 0;
 		$instorage = preg_match($instorageRegex, $html) !== 0;
 
+		if ($instorage)
+			return null;
+
 		if (preg_match($instorageRegex, $html) === 0) {
 			if (preg_match($linkRegex, $html, $linkMatch)
 				&& preg_match($thumbRegex, $html, $thumbMatch))

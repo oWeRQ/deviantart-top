@@ -23,6 +23,8 @@ foreach ($galleries as $gallery) {
 	if ($update_galleries && !in_array(strtolower($gallery['title']), $update_galleries))
 		continue;
 
+	echo 'start: '.$gallery['title']."\n";
+
 	$t = microtime(true);
 
 	$offset = 0;
@@ -58,6 +60,9 @@ foreach ($galleries as $gallery) {
 			foreach ($request['response']['content']['resources'] as $resource) {
 				$image = $deviantart->parsePageResource($resource);
 
+				if ($image === null)
+					continue;
+
 				if (isset($images[$image['id']])) {
 					$images[$image['id']]['galleries'][] = $gallery['title'];
 					$images[$image['id']]['galleries'] = array_values(array_unique($images[$image['id']]['galleries']));
@@ -69,7 +74,7 @@ foreach ($galleries as $gallery) {
 		}
 	}
 
-	echo 'done: '.$gallery['title'].': '.(microtime(true)-$t)."s\n";
+	echo 'end: '.$gallery['title'].' '.round(microtime(true)-$t)."s\n";
 }
 
 unset($images['']);
