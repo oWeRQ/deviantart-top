@@ -115,6 +115,21 @@ class Deviantart
 		return $json['DiFi']['response']['calls'];
 	}
 
+	function sendGet($url)
+	{
+		$ch = curl_init(); 
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_FAILONERROR, 1); 
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+		curl_setopt($ch, CURLOPT_COOKIEJAR, '.cookie');
+		curl_setopt($ch, CURLOPT_COOKIEFILE, '.cookie');
+		$result = curl_exec($ch);
+		curl_close($ch);  
+		return $result;
+	}
+
 	function sendPost($url, $data)
 	{
 		$ch = curl_init(); 

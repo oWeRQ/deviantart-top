@@ -8,7 +8,7 @@ $image_id = @$_REQUEST['id'];
 $same_author = isset($_REQUEST['same_author']);
 $same_galleries = isset($_REQUEST['same_galleries']);
 
-$simular = array();
+$similar = array();
 
 $images = json_decode(file_get_contents('data/images.json'), true);
 $sigs = json_decode(file_get_contents('data/images_sigs.json'), true);
@@ -85,7 +85,7 @@ if ($image_id) {
 		if (--$count < 0)
 			break;
 
-		$simular[] = $diff_image;
+		$similar[] = $diff_image;
 	}
 }
 
@@ -120,8 +120,12 @@ if ($image_id) {
 			right: 0;
 			width: 32px;
 			height: 32px;
-			border-top: 2px solid #ddd;
-			border-left: 2px solid #ddd;
+			/*border-top: 2px solid #ddd;
+			border-left: 2px solid #ddd;*/
+			border: 2px solid #49e;
+		}
+		.sig:hover {
+			border-color: #27c;
 		}
 		.sig img {
 			width: 32px;
@@ -130,7 +134,7 @@ if ($image_id) {
 		.diff {
 			position: absolute;
 			bottom: 0;
-			right: 36px;
+			right: 38px;
 			color: black;
 		}
 	</style>
@@ -162,14 +166,14 @@ if ($image_id) {
 			<img class="sig" src="<?=$find_image_sig?>">
 		</span>
 
-		<h2>Simular</h2>
+		<h2>Similar</h2>
 		<div class="images-list">
-		<? foreach ($simular as $image): ?>
+		<? foreach ($similar as $image): ?>
 			<span class="image">
 				<a href="<?=$image['page']?>" target="_blank" title="<?=$image['title']?>">
 					<img src="images/mythumbs/<?=$image['filename']?>">
 				</a>
-				<a class="sig" href="?id=<?=$image['id']?>" title="<?=$image['title']?>">
+				<a class="sig" href="?id=<?=$image['id']?>" title="Similar">
 					<img src="images/sig/<?=$image['filename']?>.png">
 				</a>
 				<span class="diff" title="&#916;<?=round($diff[$image['id']])?>"><?=100-round($diff[$image['id']]*100)?>%</span>

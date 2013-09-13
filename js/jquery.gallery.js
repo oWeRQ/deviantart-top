@@ -21,10 +21,12 @@ $.plugin('gallery', {
 		this.findAll(this.options.elements);
 		this.bindAll('thumbClick', 'imagePrev', 'imageNext', 'imageLoaded');
 
-		this.thumbsLinks.click(this.thumbClick);
+		this.imageCurrent.load(this.imageLoaded);
 		this.imagePrevEl.click(this.imagePrev);
 		this.imageNextEl.click(this.imageNext);
-		this.imageCurrent.load(this.imageLoaded);
+
+		//this.thumbsLinks.click(this.thumbClick);
+		this.$el.on('click', this.options.elements.thumbsLinks, this.thumbClick);
 
 		this.thumbsSlider = $.thumbsSlider(this.options.thumbsSlider, this.thumbs);
 
@@ -67,7 +69,7 @@ $.plugin('gallery', {
 		this.thumbsLinks.push(link[0]);
 		this.thumbsSlider.listEls.push(li[0]);
 
-		this.thumbsLinks.click(this.thumbClick);
+		//this.thumbsLinks.click(this.thumbClick);
 		this.thumbsSlider.lastEl = li;
 	},
 	setActive: function(idx){

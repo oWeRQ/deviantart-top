@@ -9,13 +9,13 @@
 	<? endif ?>
 	<h3>
 		<span class="number"><?=$i+$topOffset+1?></span>
-		<a target="_blank" href="?<?=$userLimitsParams?>&amp;username=<?=$author['username']?>"><?=$author['username']?></a>
+		<a target="_blank" href="?title=by:<?=$author['username']?>&amp;<?=$galleriesParams?>&amp;<?=$userLimitsParams?>"><?=$author['username']?></a>
 		<small>
 			<?=$author['favourites']?>
 			/ <?=$author['deviations']?>
 			= <?=round($author['percent'], 1)?>%
-			| score: <?=round($author['score'], 1)?>
-			| wilson score: <?=round($author['wilson_score']*100, 1)?>
+			| Score: <?=round($author['score'], 1)?>
+			| Wilson Score: <?=round($author['wilson_score']*100, 1)?>
 		</small>
 		<sup><a target="_blank" href="http://<?=$author['username']?>.deviantart.com/gallery/">DA</a></sup>
 	</h3>
@@ -33,6 +33,6 @@
 		<? endforeach ?>
 	</ul>
 	<? if(count($author['images']) < $author['favourites']): ?>
-		<a href="#" class="moreImages">More images (<span class="count"><?=$author['favourites']-$imagesOffset-count($author['images'])?></span>)</a>
+		<a href="#" class="moreImages">More Images (<span class="count"><?=$author['favourites']-$imagesOffset-count($author['images'])?></span>)</a>
 	<? endif ?>
 </div>

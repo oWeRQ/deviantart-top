@@ -14,8 +14,43 @@ function param($name, $default = null) {
 	return $default;
 }
 
+function parseQuery($queryString) {
+	$paramRegex = '/(^|\s+)(\w+):\s*("[^"]+"|\'[^\']+\'|\S+)/';
+
+	preg_match_all($paramRegex, $queryString, $matches);
+
+	$params = array();
+	foreach ($matches[2] as $i => $match) {
+		$params[$match] = trim($matches[3][$i], '\'"');
+	}
+
+	$query = trim(preg_replace($paramRegex, '', $queryString));
+
+	return array(
+		0 => $query,
+		'query' => $query,
+		1 => $params,
+		'params' => $params,
+	);
+}
+
+function buildQuery($query, $params) {
+	$paramsString = '';
+
+	foreach ($params as $key => $value) {
+		if (!empty($value))
+			$paramsString .= $key.':'.(strpos($value, ' ') === false ? $value : '\''.$value.'\'').' ';
+	}
+
+	return trim($paramsString.$query);
+}
+
 function score($pos, $n) {
-	return $pos * $pos / $n;
+	if ($pos > $n)
+		return 0;
+
+	//return $pos * $pos / $n;
+	return pow($pos, 1.5) * 10 / $n;
 }
 
 function wilson_score($pos, $n) {
@@ -25,6 +60,7 @@ function wilson_score($pos, $n) {
 }
 
 $keywords = json_decode(file_get_contents('data/keywords.json'), true);
+$categories = json_decode(file_get_contents('data/categories.json'), true);
 $profiles = json_decode(file_get_contents('data/profiles.json'), true);
 $images = json_decode(file_get_contents('data/images.json'), true);
 
@@ -45,7 +81,7 @@ $minFavs = (int)param('minFavs', 1);
 $maxFavs = (int)param('maxFavs', 0);
 $minDevia = (int)param('minDevia', 1);
 $imagesOffset = (int)param('imagesOffset', 0);
-$topLimit = (int)param('topLimit', 10);
+$topLimit = (int)param('topLimit', 20);
 $imagesLimit = (int)param('imagesLimit', 16);
 $page = (int)param('page', 1);
 
@@ -54,17 +90,18 @@ $title = (string)param('title', '');
 $sort = (string)param('sort', 'score');
 $sortDir = (int)param('sortDir', 1);
 
-$usernameRegex = '#\s*by:([-\w]+)\s*#';
-if (preg_match($usernameRegex, $title, $titleMatch)){
-	$username = $titleMatch[1];
-}
-
-$titleCmp = preg_replace($usernameRegex, '', $title);
+list($titleCmp, $titleParams) = parseQuery($title);
 $titleRegex = '#(^|\s)'.$titleCmp.'(\s|$)#ui';
 
-if ($username) {	
-	$title = trim('by:'.$username.' '.$titleCmp);
+if (isset($titleParams['by'])) {
+	$username = $titleParams['by'];
+} else if ($username) {
+	$titleParams['by'] = $username;
 }
+
+$categoriesQuery = isset($titleParams['cat']) ? preg_split('/\s*,\s*/', $titleParams['cat']) : array();
+
+$title = buildQuery($titleCmp, $titleParams);
 
 $topOffset = $topLimit*($page-1);
 
@@ -103,12 +140,19 @@ function getFavImages($username) {
 		global $exclude_galleries;
 		global $titleCmp;
 		global $titleRegex;
+		global $categoriesQuery;
 
 		if ($titleCmp && !preg_match($titleRegex, $image['title']))
 			return false;
 		
 		foreach ($exclude_galleries as $gallery) {
 			if (in_array($gallery, $image['galleries']))
+				return false;
+		}
+
+		if (!empty($categoriesQuery)) {
+			$categories_count = count(array_intersect($categoriesQuery, $image['categories']));
+			if ($categories_count == 0)
 				return false;
 		}
 		
@@ -183,7 +227,7 @@ if (!empty($username)) {
 
 	usort($top, function($a, $b) use($sort, $sortDir){
 		if ($a[$sort] == $b[$sort])
-			return 0;
+			return strcmp($a['username'], $b['username']);
 
 		return ($a[$sort] > $b[$sort]) ? -$sortDir : $sortDir;
 	});

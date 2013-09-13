@@ -242,7 +242,7 @@ input[type=submit].disabled {
 .b-author.m-active .b-images .cursor {
 	position: relative;
 	background: #6cf;
-	outline: 3px solid #6cf;
+	outline: 5px solid #6cf;
 	z-index: 1;
 }
 .b-images .showInGallery {
@@ -293,8 +293,9 @@ input[type=submit].disabled {
 	font-size: 18px;
 	text-align: center;
 	color: white;
-	background: rgba(0,0,0,.5);
+	/*background: rgba(0,0,0,.5);*/
 	opacity: 0;
+	text-shadow: 0 0 2px black;
 	z-index: 2;
 }
 .b-images .similar:after {
@@ -303,6 +304,13 @@ input[type=submit].disabled {
 .b-images li:hover .similar {
 	transition: opacity 200ms;
 	opacity: 1;
+}
+.b-images li .similar:hover {
+	background: rgba(0,0,0,.5);
+	transition: background 500ms;
+	border-left: 1px solid rgba(255,255,255,.5);
+	border-bottom: 1px solid rgba(255,255,255,.5);
+	border-bottom-left-radius: 2px;
 }
 .b-images .update {
 	position: absolute;
@@ -424,6 +432,9 @@ input[type=submit].disabled {
 	background: white;
 	border: 1px solid #999;
 	box-shadow: 0 2px 4px rgba(0,0,0,.5);
+}
+.updateControl.show {
+	display: block;
 }
 .updateControl:before {
 	content: '';

@@ -103,6 +103,10 @@
 		<div class="row actions">
 			<input type="submit" value="Show">
 		</div>
+		
+		<div class="row actions">
+			<a href=".">Reset Filter</a>
+		</div>
 	</form>
 </div>
 
@@ -127,6 +131,9 @@
 <datalist id="searchList">
 	<? foreach (array_slice($keywords, 0, 200, true) as $keyword => $count): ?>
 		<option value="<?=$keyword?>">
+	<? endforeach ?>
+	<? foreach ($categories as $category => $count): ?>
+		<option value="cat:'<?=$category?>'">
 	<? endforeach ?>
 	<? foreach ($profiles as $profile): ?>
 		<option value="by:<?=$profile['username']?>">

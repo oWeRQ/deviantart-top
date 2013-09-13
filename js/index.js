@@ -401,7 +401,7 @@ $(function(){
 
 			this.el.find('.closeControl').click(function(e){
 				e.preventDefault();
-				that.el.hide();
+				that.hide();
 			});
 
 			this.form.submit(function(e){
@@ -412,14 +412,14 @@ $(function(){
 					$('#image_'+data.image.id).data('galleries', galleries).attr('data-galleries', galleries);
 				}, 'json');
 
-				that.el.hide();
+				that.hide();
 			});
 		},
 		show: function(link){
 			var $link = $(link);
 
-			if (this.activeLink && this.activeLink[0] === $link[0] && this.el.is(':visible')) {
-				this.el.hide();
+			if (this.activeLink && this.activeLink[0] === $link[0] && this.el.hasClass('show')) {
+				this.el.removeClass('show');
 				this.activeLink = null;
 				this.imagesBlock = null;
 				return;
@@ -439,9 +439,19 @@ $(function(){
 
 			var linkPos = this.activeLink.offset();
 			this.el.css({
+				opacity: 1,
 				left: linkPos.left,
 				top: linkPos.top+this.activeLink.height()
-			}).show();
+			}).addClass('show');
+		},
+		hide: function(){
+			var that = this;
+			this.el.animate({
+				opacity: 0,
+				top: '-=12px'
+			}, 500, function(){
+				that.el.removeClass('show');
+			});
 		},
 		getSelected: function(){
 			return this.imagesBlock.find('.selected').map(function(){
@@ -626,6 +636,7 @@ $(function(){
 
 			var linkPos = this.activeLink.offset();
 			this.el.css({
+				opacity: 1,
 				left: linkPos.left,
 				top: linkPos.top+this.activeLink.height()
 			}).outerWidth(this.activeLink.outerWidth()).show();
@@ -633,11 +644,19 @@ $(function(){
 		close: function(){
 			$(document).off('keypress', this.keypress);
 
-			this.el.hide();
+			//this.el.hide();
 			this.activeLink = null;
 			this.imagesBlock = null;
 			this.username = null;
 			this.selected = -1;
+
+			var that = this;
+			this.el.animate({
+				opacity: 0,
+				top: '-=8px'
+			}, 500, function(){
+				that.el.hide();
+			});
 		},
 		getSelected: function(){
 			return this.imagesBlock.find('.selected').map(function(){
