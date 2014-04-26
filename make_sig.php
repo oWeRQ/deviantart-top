@@ -1,9 +1,10 @@
 <?php
 
-require_once 'imagesig.class.php';
+require_once 'classes/ImageSig.php';
 $imageSig = new ImageSig();
 
 $images = json_decode(file_get_contents('data/images.json'), true);
+$old_sigs = json_decode(file_get_contents('data/images_sigs.json'), true);
 
 $count = 0;
 $images_count = count($images);
@@ -19,9 +20,13 @@ foreach ($images as $image) {
 	if (!isset($image['id']))
 		continue;
 
-	$filename = 'images/mythumbs/'.$image['filename'];
-	if (file_exists($filename)) {
-		$sigs[$image['id']] = $imageSig->makeSig($filename, 'images/sig/'.$image['filename'].'.png');
+	if (isset($old_sigs[$image['id']])) {
+		$sigs[$image['id']] = $old_sigs[$image['id']];
+	} else {
+		$filename = 'images/mythumbs/'.$image['filename'];
+		if (file_exists($filename)) {
+			$sigs[$image['id']] = $imageSig->makeSig($filename, 'images/sig/'.$image['filename'].'.png');
+		}
 	}
 
 	if ($count % 50 == 0) {

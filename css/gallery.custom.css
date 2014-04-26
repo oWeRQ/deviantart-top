@@ -2,7 +2,6 @@
 	margin: 20px auto;
 	width: 640px;
 	background: #f0f0f0;
-	font-family: serif;
 }
 .gallery-image .image-prev,
 .gallery-image .image-next {
@@ -20,6 +19,7 @@
 	text-decoration: none;
 	color: #fff;
 	font-size: 24px;
+	font-family: serif;
 	text-shadow: 0 0 3px black;
 	background: rgba(0,0,0,.3);
 	opacity: .5;

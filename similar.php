@@ -1,6 +1,6 @@
 <?php
 
-require_once 'imagesig.class.php';
+require_once 'classes/ImageSig.php';
 $imageSig = new ImageSig();
 
 $find_image = false;

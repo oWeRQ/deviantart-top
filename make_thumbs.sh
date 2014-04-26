@@ -7,7 +7,7 @@ do
 	thumbpath=$thumbsdir/`basename $imagepath`
 
 	if [ ! -e $thumbpath ]; then
-		convert $imagepath -resize x120 -quality 85 -interlace Plane $thumbpath
+		convert $imagepath -resize x120 -quality 85 -interlace Plane $thumbpath || mv $imagepath images/corrupted/
 	fi
 done
 
@@ -16,6 +16,6 @@ do
 	thumbpath=$thumbsdir/`basename $imagepath`
 
 	if [ ! -e $thumbpath ]; then
-		convert $imagepath -resize x120 $thumbpath
+		convert $imagepath -resize x120 $thumbpath || mv $imagepath images/corrupted/
 	fi
 done

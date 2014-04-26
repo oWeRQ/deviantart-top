@@ -13,8 +13,10 @@ foreach ($images as $image) {
 			@$keywords[$word][] = $image['id'];
 	}
 
-	foreach ($image['categories'] as $category) {
-		@$categories[$category][] = $image['id'];
+	if (is_array($image['categories'])) {
+		foreach ($image['categories'] as $category) {
+			@$categories[$category][] = $image['id'];
+		}
 	}
 }
 

@@ -1,28 +1,42 @@
 <?php
 
+$user_id = 16413375;
 $maxCalls = 40;
 
 error_reporting(E_ALL);
 
-require_once 'deviantart.class.php';
-Devianart::$silent = true;
+require_once 'classes/Deviantart.php';
+Deviantart::$silent = true;
+$deviantart = new Deviantart;
+$calls = array();
 
-while(file_exists('data/images.json.lock'))
-	usleep(500);
+if (($images_handle = fopen('data/images.json', 'c+')) === false) {
+	echo json_encode(array(
+		'error' => 1,
+		'message' => 'Couldn\'t open file!',
+	));
+	exit();
+}
 
-touch('data/images.json.lock');
+if (!flock($images_handle, LOCK_EX)) {
+	fclose($images_handle);
+	
+	echo json_encode(array(
+		'error' => 2,
+		'message' => 'Couldn\'t get the lock!',
+	));
+	exit();
+}
 
-$images = json_decode(file_get_contents('data/images.json'), true);
+$images = json_decode(stream_get_contents($images_handle), true);
 $profiles = json_decode(file_get_contents('data/profiles.json'), true);
 
-$deviantart = new Deviantart;
+//$galleries_data = $deviantart->getFavGalleries($user_id, 21);
+$galleries_data = json_decode(file_get_contents('data/galleries.json'), true);
 
-$user_id = 16413375;
-$galleries_data = $deviantart->getFavGalleries($user_id, 21);
+$response = null;
 
 $action = @$_REQUEST['action'];
-
-$calls = array();
 
 if ($action === 'setGalleries')
 {
@@ -57,7 +71,7 @@ if ($action === 'setGalleries')
 
 	$image['galleries'] = $galleries;
 
-	echo json_encode(array(
+	$response = json_encode(array(
 		'image' => $image,
 	));
 } elseif ($action === 'addGallery' || $action === 'removeGallery') {
@@ -75,7 +89,6 @@ if ($action === 'setGalleries')
 				if ($action === 'removeGallery') {
 					if ($pos !== false) {
 						array_splice($image['galleries'], $pos, 1);
-						//$deviantart->removeFavGalleries($user_id, $gallery_id, $image_id);
 						$calls[] = array(
 							'object' => "Gallections",
 							'method' => "remove_resource",
@@ -91,13 +104,12 @@ if ($action === 'setGalleries')
 				} else {
 					if ($pos === false) {
 						$image['galleries'][] = $gallery_data['title'];
-						//$deviantart->addFavGalleries($user_id, $gallery_id, $image_id);
 						$calls[] = array(
 							'object' => "Aggregations",
 							'method' => "add_resource",
 							'params' => array(
 								$user_id,
-								"551235953",
+								0,
 								21,
 								$gallery_id,
 								1,
@@ -113,7 +125,7 @@ if ($action === 'setGalleries')
 		}
 	}
 
-	echo json_encode(array(
+	$response = json_encode(array(
 		'images' => $updateImages,
 	));
 } elseif ($action === 'deleteFavorites') {
@@ -121,10 +133,12 @@ if ($action === 'setGalleries')
 	$image_ids = (array)@$_REQUEST['images'];
 
 	foreach ($image_ids as $image_id) {
+		if (!isset($images[$image_id]))
+			continue;
+
 		$updateImages[] = $images[$image_id];
 		unset($images[$image_id]);
 
-		//$deviantart->toggleFavourite($image_id);
 		$calls[] = array(
 			'object' => "Deviation",
 			'method' => "Favourite",
@@ -134,14 +148,32 @@ if ($action === 'setGalleries')
 		); 
 	}
 
-	echo json_encode(array(
+	$response = json_encode(array(
 		'images' => $updateImages,
 	));
 }
 
+$images_str = json_encode($images);
+
+if (disk_free_space('data/') < strlen($images_str)) {
+	flock($images_handle, LOCK_UN);
+	fclose($images_handle);
+
+	echo json_encode(array(
+		'error' => 3,
+		'message' => 'Disk full',
+	));
+	exit();
+}
+
 if (!empty($calls))
-	$deviantart->sendCalls($calls, 'post');
+	$deviantart->sendCalls($calls, 'post', 1);
 
-file_put_contents('data/images.json', json_encode($images));
+echo $response;
 
-unlink('data/images.json.lock');
+ftruncate($images_handle, 0);
+rewind($images_handle);
+fwrite($images_handle, $images_str);
+fflush($images_handle);
+flock($images_handle, LOCK_UN);
+fclose($images_handle);

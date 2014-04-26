@@ -6,34 +6,54 @@ class Deviantart
 	
 	public $user_id = null;
 	public $ui = null;
+	public $ua = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:27.0) Gecko/20100101 Firefox/27.0';
+	public $cookie_file = '../.cookie';
 
 	public static $cache_time = 259200; //3600*24*3
 	//public static $cache_time = 604800; //3600*24*7
 	public static $silent = false;
 
-	function userinfo($username)
+	public static function silent($value)
 	{
-		libxml_use_internal_errors(true);
+		self::$silent = $value;
+	}
 
+	public function __construct($user_id = null)
+	{
+		$this->user_id = $user_id;
+		$this->cookie_file = realpath(dirname(__FILE__).'/'.$this->cookie_file);
+	}
+
+	public function userinfo($username)
+	{
 		$file = 'cache/profiles/'.$username.'.html';
 
 		if (file_exists($file) && time()-filemtime($file) < self::$cache_time) {
 			$html = file_get_contents($file);
 		} else {
 			$url = 'http://'.$username.'.deviantart.com';
-			$html = @file_get_contents($url);
-			file_put_contents($file, $html);
+			$html = $this->sendGet($url);
+			if ($html) {
+				file_put_contents($file, $html);
+			}
 		}
 
 		if (empty($html))
 			return null;
 
+		if (strpos($html, 'error-deactivated') !== false)
+			return null;
+
+		libxml_use_internal_errors(true);
 		$doc = new DOMDocument();
 		$doc->loadHTML($html);
 		$xpath = new DOMXPath($doc);
 
 		$info = $xpath->query("//div[@class='pbox pppbox']")->item(0);
 
+		if (!$info)
+			return null;
+		
 		preg_match_all('/([\d,]+)[ ]+(\w+)/', $info->textContent, $matches);
 
 		$counts = array();
@@ -41,10 +61,24 @@ class Deviantart
 			$counts[strtolower($name)] = intval(str_replace(',', '', $matches[1][$i]));
 		}
 
+		/*
+		preg_match_all('/data-userid="(\d+)"/', $html, $matches);
+		if (count($matches[1]) === 0) {
+			return null;
+		}
+
+		if (count($matches[1]) > 1) {
+			var_dump($matches[1]);
+			die();
+		}
+
+		$counts['id'] = $matches[1][0];
+		*/
+
 		return $counts;
 	}
 
-	function sendCall($callObject, $callMethod, $callParams, $method = 'get', $try = 3)
+	public function sendCall($callObject, $callMethod, $callParams, $method = 'get', $retry = 3)
 	{
 		return $this->sendCalls(array(
 			array(
@@ -52,10 +86,10 @@ class Deviantart
 				'method' => $callMethod,
 				'params' => $callParams,
 			),
-		), $method, $try)[0]['response']['content'];
+		), $method, $retry)[0]['response']['content'];
 	}
 
-	function sendCalls(array $calls, $method = 'get', $try = 3)
+	public function sendCalls(array $calls, $method = 'get', $retry = 3)
 	{
 		$parts = array(
 			'scheme' => 'http',
@@ -92,71 +126,87 @@ class Deviantart
 				if (!self::$silent)
 					echo "fetch: $data_file\n";
 
-				$data = file_get_contents($url);
-				file_put_contents($data_file, $data);
+				//$data = file_get_contents($url);
+				$data = $this->sendGet($url);
+				if ($data) {
+					@file_put_contents($data_file, $data);
+					@chmod($data_file, 0666);
+				}
 			} elseif ($method === 'post') {
 				$data = $this->sendPost($url, $params);
 			}
 		}
 
+		/*if (!$data) {
+			echo 'error: no DiFi response;';
+			die();
+		}*/
+
 		$json = json_decode($data, true);
 
 		if ($json['DiFi']['status'] === 'FAIL') {
-			if (--$try > 0) {
-				echo "try: $try\n";
-				unlink($data_file);
-				return $this->sendCalls($calls, $method, $try);
+			//return array();
+			if (--$retry > 0) {
+				echo "retry: $retry\n";
+				@unlink($data_file);
+				return $this->sendCalls($calls, $method, $retry);
 			}
 
-			echo "error: ".$json['DiFi']['response']['error']."\n";
+			echo "error: ".$json['DiFi']['response']['error']."; details: ".$json['DiFi']['response']['details'].";\n";
 			die();
 		}
 
 		return $json['DiFi']['response']['calls'];
 	}
 
-	function sendGet($url)
+	public function sendGet($url)
 	{
 		$ch = curl_init(); 
 		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_FAILONERROR, 1); 
+		//curl_setopt($ch, CURLOPT_HEADER, 1);
+		curl_setopt($ch, CURLOPT_FAILONERROR, 0);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-		curl_setopt($ch, CURLOPT_COOKIEJAR, '.cookie');
-		curl_setopt($ch, CURLOPT_COOKIEFILE, '.cookie');
+		curl_setopt($ch, CURLOPT_USERAGENT, $this->ua);
+		curl_setopt($ch, CURLOPT_COOKIEJAR, $this->cookie_file);
+		curl_setopt($ch, CURLOPT_COOKIEFILE, $this->cookie_file);
 		$result = curl_exec($ch);
-		curl_close($ch);  
+		curl_close($ch);
 		return $result;
 	}
 
-	function sendPost($url, $data)
+	public function sendPost($url, $data)
 	{
 		$ch = curl_init(); 
 		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_FAILONERROR, 1); 
+		//curl_setopt($ch, CURLOPT_HEADER, 1);
+		curl_setopt($ch, CURLOPT_FAILONERROR, 1);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 3);
 		curl_setopt($ch, CURLOPT_POST, 1); 
 		curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-		curl_setopt($ch, CURLOPT_COOKIEJAR, '.cookie');
-		curl_setopt($ch, CURLOPT_COOKIEFILE, '.cookie');
+		curl_setopt($ch, CURLOPT_USERAGENT, $this->ua);
+		curl_setopt($ch, CURLOPT_COOKIEJAR, $this->cookie_file);
+		curl_setopt($ch, CURLOPT_COOKIEFILE, $this->cookie_file);
 		$result = curl_exec($ch);
-		curl_close($ch);  
+		curl_close($ch);
 		return $result;
 	}
 
-	function getUserToken()
+	public function getUserToken()
 	{
-		$cookie = file_get_contents('.cookie');
+		$cookie = file_get_contents($this->cookie_file);
 		if (preg_match('/userinfo\s+([_%\w]+)/', $cookie, $match)) {
 			return urldecode($match[1]);
 		}
 		return false;
 	}
 
-	function getFavGalleries($user_id, $type = 21)
+	public function getFavGalleries($user_id, $type = 21)
 	{
 		return $this->sendCall("Aggregations", "get_galleries_initial", array(
 			$user_id,
@@ -165,7 +215,7 @@ class Deviantart
 		));
 	}
 
-	function addFavGalleries($user_id, $gallery_id, $image_id, $position = 0)
+	public function addFavGalleries($user_id, $gallery_id, $image_id, $position = 0)
 	{
 		return $this->sendCall("Aggregations", "add_resource", array(
 			$user_id,
@@ -178,14 +228,15 @@ class Deviantart
 		), 'post');
 	}
 
-	function toggleFavourite($image_id)
+	// @return string "Favourite removed" or "Favourite added"
+	public function toggleFavourite($image_id)
 	{
 		return $this->sendCall("Deviation", "Favourite", array(
 			$image_id,
 		), 'post');
 	}
 
-	function removeFavGalleries($user_id, $gallery_id, $image_id)
+	public function removeFavGalleries($user_id, $gallery_id, $image_id)
 	{
 		return $this->sendCall("Gallections", "remove_resource", array(
 			$user_id,
@@ -196,7 +247,7 @@ class Deviantart
 		), 'post');
 	}
 
-	function getFavPage($user, $offset = 0)
+	public function getFavPage($user, $offset = 0)
 	{
 		return $this->sendCall("Resources", "htmlFromQuery", array(
 			"favby:".$user,
@@ -207,7 +258,7 @@ class Deviantart
 		));
 	}
 
-	function getDevwatch($id)
+	public function getDevwatch($id)
 	{
 		return $this->sendCall("MessageCenter", "get_views", array(
 			$id,
@@ -215,11 +266,11 @@ class Deviantart
 		), 'post');
 	}
 
-	function parsePageResource($resource)
+	public function parsePageResource($resource)
 	{
 		$ismatureRegex = '#class="thumb ismature"#';
 		$instorageRegex = '#class="instorage"#';
-		$linkRegex = '#<a class="thumb[\s\w]*" href="(http://([^.]+)[^"]+)#';
+		$linkRegex = '#<a class="thumb[\s\w-_]*" href="(http://([^.]+)[^"]+)#';
 		$thumbRegex = '#data-src="(http://([^.]+)([^"]+))#';
 		$titleRegex = '#title="([^"]*)#';
 		$titlePartsRegex = '#(.+) by (.)([-\w]+), (\w+ \d+, \d+) in (.+)#u';
@@ -273,7 +324,7 @@ class Deviantart
 		}
 	}
 
-	function getFavs($user, $offset = 0)
+	public function getFavs($user, $offset = 0)
 	{
 		$favs = array();
 
@@ -298,4 +349,4 @@ class Deviantart
 	}
 }
 
-class Devianart extends Deviantart {}
+//class Devianart extends Deviantart {}

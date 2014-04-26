@@ -72,10 +72,12 @@ input[type=submit]:focus {
 .m-button.disabled,
 input[type=submit].disabled {
 	color: #aaa;
-	background-image: -webkit-linear-gradient(#f1f1f1, #f1f1f1 38%, #e6e6e6);
 	background-image: linear-gradient(to bottom, #f1f1f1, #f1f1f1 38%, #e6e6e6);
 	border-color: rgba(80, 80, 80, .2);
 	box-shadow: 0 1px 0 rgba(80, 80, 80, .08), inset 0 1px 2px rgba(255, 255, 255, .75);
+}
+input::-moz-focus-inner {
+	border: none;
 }
 .m-down {
 	padding-right: 8px;
@@ -419,6 +421,7 @@ input[type=submit].disabled {
 }
 .b-dropmenu a:focus,
 .b-dropmenu a:hover {
+	color: black;
 	background: #ddd;
 }
 

@@ -12,7 +12,7 @@ $.plugin('gallery', {
 		},
 		thumbsSlider: {},
 		showDuration: 400,
-		showLoadingTimeout: 400,
+		showLoadingTimeout: 1000,
 		onActivate: $.noop
 	},
 	idx: 0,

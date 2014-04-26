@@ -1,6 +1,6 @@
 <?php
 
-require_once 'deviantart.class.php';
+require_once 'classes/Deviantart.php';
 
 $deviantart = new Deviantart;
 Deviantart::$cache_time = 0;
@@ -23,4 +23,5 @@ foreach ($content as $gallery) {
 
 //file_put_contents('getgalleries.out.txt', var_export($content, true));
 
+file_put_contents('data/galleries.json', json_encode($content, JSON_PRETTY_PRINT));
 file_put_contents('data/galleries_history.json', json_encode($galleries_history, JSON_PRETTY_PRINT));

@@ -2,95 +2,39 @@
 
 error_reporting(E_ALL);
 
-define('IS_ADMIN', $_SERVER['PHP_AUTH_USER'] === 'admin');
+require_once 'classes/Request.php';
+require_once 'classes/View.php';
+require_once 'classes/DeviantartTop.php';
 
-require_once 'deviantart.class.php';
-Deviantart::$silent = true;
+define('IS_ADMIN', Request::getUsername() === 'admin');
 
-function param($name, $default = null) {
-	if (isset($_REQUEST[$name]) && !empty($_REQUEST[$name]))
-		return $_REQUEST[$name];
+$view = new View('layout');
 
-	return $default;
-}
+$galleries = DeviantartTop::getData('galleries');
+$keywords = DeviantartTop::getData('keywords');
+$categories = DeviantartTop::getData('categories');
+$profiles = DeviantartTop::getData('profiles');
 
-function parseQuery($queryString) {
-	$paramRegex = '/(^|\s+)(\w+):\s*("[^"]+"|\'[^\']+\'|\S+)/';
+// filter params
+$exclude_galleries = (array)Request::param('exclude', array());
+$checked_galleries = (array)Request::param('galleries', array());
+$condition = (string)Request::param('condition', 'or');
+$intersect = (int)Request::param('intersect', 1);
 
-	preg_match_all($paramRegex, $queryString, $matches);
+$minFavs = (int)Request::param('minFavs', 1);
+$maxFavs = (int)Request::param('maxFavs', 0);
+$minDevia = (int)Request::param('minDevia', 1);
+$imagesOffset = (int)Request::param('imagesOffset', 0);
+$topLimit = (int)Request::param('topLimit', 20);
+$imagesLimit = (int)Request::param('imagesLimit', 16);
+$sort = (string)Request::param('sort', 'score');
+$sortDir = (int)Request::param('sortDir', 1);
+$page = (int)Request::param('page', 1);
 
-	$params = array();
-	foreach ($matches[2] as $i => $match) {
-		$params[$match] = trim($matches[3][$i], '\'"');
-	}
+$username = (string)Request::param('username', '');
+$title = (string)Request::param('title', '');
 
-	$query = trim(preg_replace($paramRegex, '', $queryString));
-
-	return array(
-		0 => $query,
-		'query' => $query,
-		1 => $params,
-		'params' => $params,
-	);
-}
-
-function buildQuery($query, $params) {
-	$paramsString = '';
-
-	foreach ($params as $key => $value) {
-		if (!empty($value))
-			$paramsString .= $key.':'.(strpos($value, ' ') === false ? $value : '\''.$value.'\'').' ';
-	}
-
-	return trim($paramsString.$query);
-}
-
-function score($pos, $n) {
-	if ($pos > $n)
-		return 0;
-
-	//return $pos * $pos / $n;
-	return pow($pos, 1.5) * 10 / $n;
-}
-
-function wilson_score($pos, $n) {
-	$z = 1.64485; //1.0 = 85%, 1.6 = 95%
-	$phat = $pos / $n;
-	return ($phat + $z*$z/(2*$n) - $z*sqrt(($phat*(1-$phat) + $z*$z/(4*$n))/$n)) / (1 + $z*$z/$n);
-}
-
-$keywords = json_decode(file_get_contents('data/keywords.json'), true);
-$categories = json_decode(file_get_contents('data/categories.json'), true);
-$profiles = json_decode(file_get_contents('data/profiles.json'), true);
-$images = json_decode(file_get_contents('data/images.json'), true);
-
-$images_by_author = array();
-foreach ($images as $image) {
-	@$images_by_author[$image['author']][$image['id']] = $image;
-}
-
-$deviantart = new Deviantart;
-$galleries = $deviantart->getFavGalleries(16413375, 21);
-
-$exclude_galleries = (array)param('exclude', array());
-$checked_galleries = (array)param('galleries', array());
-$condition = (string)param('condition', 'or');
-$intersect = (int)param('intersect', 1);
-
-$minFavs = (int)param('minFavs', 1);
-$maxFavs = (int)param('maxFavs', 0);
-$minDevia = (int)param('minDevia', 1);
-$imagesOffset = (int)param('imagesOffset', 0);
-$topLimit = (int)param('topLimit', 20);
-$imagesLimit = (int)param('imagesLimit', 16);
-$page = (int)param('page', 1);
-
-$username = (string)param('username', '');
-$title = (string)param('title', '');
-$sort = (string)param('sort', 'score');
-$sortDir = (int)param('sortDir', 1);
-
-list($titleCmp, $titleParams) = parseQuery($title);
+list($titleCmp, $titleParams) = Request::parseQuery($title);
 $titleRegex = '#(^|\s)'.$titleCmp.'(\s|$)#ui';
 
 if (isset($titleParams['by'])) {
@@ -101,10 +45,38 @@ if (isset($titleParams['by'])) {
 
 $categoriesQuery = isset($titleParams['cat']) ? preg_split('/\s*,\s*/', $titleParams['cat']) : array();
 
-$title = buildQuery($titleCmp, $titleParams);
+$title = Request::buildQuery($titleCmp, $titleParams);
 
+// get top
 $topOffset = $topLimit*($page-1);
 
+$query = compact(
+	'checked_galleries',
+	'exclude_galleries',
+	'titleCmp',
+	'titleRegex',
+	'categoriesQuery',
+	'condition',
+	'intersect'
+);
+
+$topQuery = compact(
+	'username',
+	'minFavs',
+	'maxFavs',
+	'minDevia',
+	'imagesOffset',
+	'imagesLimit',
+	'sort',
+	'sortDir'
+);
+
+$authors = DeviantartTop::getTop($query, $topQuery);
+
+$pages = ceil(count($authors)/$topLimit);
+$authors = array_slice($authors, $topOffset, $topLimit);
+
+// query params
 $galleriesParams = http_build_query(array(
 	'exclude' => $exclude_galleries,
 	'galleries' => $checked_galleries,
@@ -129,132 +101,62 @@ $userLimitsParams = http_build_query(array(
 	'sort' => $sort,
 ));
 
-function getFavImages($username) {
-	global $images_by_author;
-	global $checked_galleries;
-
-	if (!isset($images_by_author[$username]))
-		return array();
-
-	$images = array_values(array_filter($images_by_author[$username], function($image){
-		global $exclude_galleries;
-		global $titleCmp;
-		global $titleRegex;
-		global $categoriesQuery;
-
-		if ($titleCmp && !preg_match($titleRegex, $image['title']))
-			return false;
-		
-		foreach ($exclude_galleries as $gallery) {
-			if (in_array($gallery, $image['galleries']))
-				return false;
-		}
-
-		if (!empty($categoriesQuery)) {
-			$categories_count = count(array_intersect($categoriesQuery, $image['categories']));
-			if ($categories_count == 0)
-				return false;
-		}
-		
-		return true;
-	}));
-
-	if (!empty($checked_galleries)) {
-		$images = array_values(array_filter($images, function($image){
-			global $checked_galleries;
-			global $condition;
-			global $intersect;
-
-			$diff_count = count(array_diff($checked_galleries, $image['galleries']));
-			$checked_count = count($checked_galleries);
-
-			if ($condition == 'or')
-				return $diff_count < $checked_count;
-			elseif ($condition == 'and')
-				return $diff_count === 0;
-			elseif ($condition == 'only')
-				return $diff_count === 0 && $checked_count === count($image['galleries']);
-			elseif ($condition == 'xor')
-				return $diff_count === $checked_count-$intersect;
-		}));
-	}
-
-	usort($images, function($a, $b){
-		return $a['id'] > $b['id'] ? -1 : 1;
-	});
-
-	return $images;
-}
-
-if (!empty($username)) {
-	$pages = 1;
-	$authors = array();
-
-	if (isset($profiles[$username])) {
-		$profile = $profiles[$username];
-		$images = getFavImages($username);
-		$favourites = count($images);
-
-		$authors[] = array(
-			'username' => $username,
-			'percent' => $favourites/$profile['deviations']*100,
-			'score' => score($favourites, $profile['deviations']),
-			'wilson_score' => wilson_score($favourites, $profile['deviations']),
-			'favourites' => $favourites,
-			'deviations' => $profile['deviations'],
-			'images' => array_slice($images, $imagesOffset, $imagesLimit),
-		);
-	}
-} else {
-	$top = array_values(array_filter(array_map(function($profile) use($minFavs, $maxFavs, $minDevia, $imagesOffset, $imagesLimit){
-		if (isset($profile['deviations']) && $profile['deviations'] >= $minDevia) {
-			$images = getFavImages($profile['username']);
-			$favourites = count($images);
-
-			if ($favourites !==0 && $favourites >= $minFavs && ($maxFavs === 0 || $favourites <= $maxFavs)) {
-				return array(
-					'username' => $profile['username'],
-					'percent' => $favourites/$profile['deviations']*100,
-					'score' => score($favourites, $profile['deviations']),
-					'wilson_score' => wilson_score($favourites, $profile['deviations']),
-					'favourites' => $favourites,
-					'deviations' => $profile['deviations'],
-					'images' => array_slice($images, $imagesOffset, $imagesLimit),
-				);
-			}
-		}
-	}, $profiles)));
-
-	usort($top, function($a, $b) use($sort, $sortDir){
-		if ($a[$sort] == $b[$sort])
-			return strcmp($a['username'], $b['username']);
-
-		return ($a[$sort] > $b[$sort]) ? -$sortDir : $sortDir;
-	});
-
-	$pages = ceil(count($top)/$topLimit);
-
-	$authors = array_slice($top, $topOffset, $topLimit);
-}
-
-if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])
-	&& $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest')
-{
+// render
+if (Request::isAjax()) {
 	$authorsHtml = array();
 
 	foreach ($authors as $i => $author) {
-		ob_start();
-		require 'index.item.tpl.php';
-		$authorsHtml[] = ob_get_clean();
+		$authorsHtml[] = $view->renderPartial('_item', compact(
+			'i',
+			'author',
+			'imagesOffset',
+			'topOffset',
+			'galleriesParams',
+			'userLimitsParams'
+		), true);
 	}
 
-	echo json_encode(array(
-		'authors' => $authors,
-		'authorsHtml' => $authorsHtml,
-		'page' => $page,
-		'prevUrl' => '?'.$galleriesParams.'&'.$limitsParams.'&title='.$title.'&page='.($page-1),
-		'nextUrl' => '?'.$galleriesParams.'&'.$limitsParams.'&title='.$title.'&page='.($page+1),
+	$prevUrl = '?'.$galleriesParams.'&'.$limitsParams.'&title='.$title.'&page='.($page-1);
+	$nextUrl = '?'.$galleriesParams.'&'.$limitsParams.'&title='.$title.'&page='.($page+1);
+
+	echo json_encode(compact(
+		'authors',
+		'authorsHtml',
+		'page',
+		'prevUrl',
+		'nextUrl'
 	));
 } else {
-	include 'index.tpl.php';
+	$view->sidebar = $view->renderPartial('_filter', compact(
+		'title',
+		'keywords',
+		'categories',
+		'profiles',
+		'galleries',
+		'exclude_galleries',
+		'checked_galleries',
+		'condition',
+		'minFavs',
+		'maxFavs',
+		'minDevia',
+		'imagesLimit',
+		'topLimit',
+		'page',
+		'sort',
+		'sortDir'
+	), true);
+
+	$view->render('index', compact(
+		'page',
+		'pages',
+		'galleriesParams',
+		'limitsParams',
+		'userLimitsParams',
+		'title',
+		'authors',
+		'imagesOffset',
+		'topOffset',
+		'keywords',
+		'galleries'
+	));
 }

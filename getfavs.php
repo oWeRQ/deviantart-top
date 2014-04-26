@@ -1,13 +1,15 @@
 <?php
 
-require_once 'deviantart.class.php';
-Deviantart::$cache_time = 3600*2;
+require_once 'classes/Deviantart.php';
+//Deviantart::$cache_time = 3600*3;
 $deviantart = new Deviantart;
 
 $username = 'oWeRQ';
 $userid = 16413375;
 $perPage = 24;
-$perRequest = 40;
+//$perRequest = 40;
+$perRequest = 8;
+$trys = 3;
 
 $update_galleries = false;
 $images = array();
@@ -33,6 +35,8 @@ foreach ($galleries as $gallery) {
 	$maxOffset = ($pages-1) * $perPage;
 
 	while ($offset < $maxOffset) {
+		$existImagesCount = 0;
+		
 		$calls = array();
 
 		for ($i = 0; $i < $perRequest; $i++) {
@@ -54,24 +58,41 @@ foreach ($galleries as $gallery) {
 			$offset += $perPage;
 		}
 
-		$requests = $deviantart->sendCalls($calls);
+		for ($try = 0; $try < $trys; $try++) {
+			$requests = $deviantart->sendCalls($calls);
 
-		foreach ($requests as $request) {
-			foreach ($request['response']['content']['resources'] as $resource) {
-				$image = $deviantart->parsePageResource($resource);
+			if (!$requests) {
+				sleep(1);
+				continue;
+			}
 
-				if ($image === null)
-					continue;
 
-				if (isset($images[$image['id']])) {
-					$images[$image['id']]['galleries'][] = $gallery['title'];
-					$images[$image['id']]['galleries'] = array_values(array_unique($images[$image['id']]['galleries']));
-				} else {
-					$image['galleries'] = array($gallery['title']);
-					$images[$image['id']] = $image;
+			foreach ($requests as $request) {
+				foreach ($request['response']['content']['resources'] as $resource) {
+					$image = $deviantart->parsePageResource($resource);
+
+					if ($image === null)
+						continue;
+
+					if (isset($images[$image['id']])) {
+						if (in_array($gallery['title'], $images[$image['id']]['galleries'])) {
+							$existImagesCount++;
+						} else {
+							$images[$image['id']]['galleries'][] = $gallery['title'];
+						}
+					} else {
+						$image['galleries'] = array($gallery['title']);
+						$images[$image['id']] = $image;
+					}
 				}
 			}
+
+			break;
 		}
+
+		//if ($existImagesCount == $perPage * $perRequest)
+		if ($existImagesCount >= $perPage)
+			break;
 	}
 
 	echo 'end: '.$gallery['title'].' '.round(microtime(true)-$t)."s\n";

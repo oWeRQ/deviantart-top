@@ -547,9 +547,11 @@ $(function(){
 	};
 	checkMenu.init();
 
+	$('.actionCheckAll input').prop('checked', false);
+
 	authorsList.on('click', '.actionCheckAll input', function(e){
 		//e.preventDefault();
-		e.stopPropagation();
+		//e.stopPropagation();
 
 		var checkbox = $(this);
 		var items = checkbox.closest('.b-author').find('.showInGallery');
@@ -561,9 +563,10 @@ $(function(){
 	});	
 
 	authorsList.on('click', '.actionCheckAll', function(e){
-		e.preventDefault();
+		//e.preventDefault();
 
-		checkMenu.open(this);
+		if (this === e.target)
+			checkMenu.open(this);
 	});
 
 	var moveMenu = {
