@@ -4,6 +4,9 @@ require_once 'classes/Deviantart.php';
 //Deviantart::$cache_time = 3600*3;
 $deviantart = new Deviantart;
 
+$mongo = new MongoClient();
+$db = $mongo->deviantart_top;
+
 $username = 'oWeRQ';
 $userid = 16413375;
 $perPage = 24;
@@ -16,7 +19,17 @@ $images = array();
 
 if ($argc > 1) {	
 	$update_galleries = array_map('strtolower', array_slice($argv, 1));
-	$images = json_decode(file_get_contents('data/images.json'), true);
+	//$images = json_decode(file_get_contents('data/images.json'), true);
+} else {
+	$db->images->update(array(
+		'server_deleted' => false,
+	), array(
+		'$set' => array(
+			'server_deleted' => time(),
+		),
+	), array(
+		'multiple' => true,
+	));
 }
 
 $galleries = $deviantart->getFavGalleries($userid);
@@ -66,23 +79,43 @@ foreach ($galleries as $gallery) {
 				continue;
 			}
 
-
 			foreach ($requests as $request) {
 				foreach ($request['response']['content']['resources'] as $resource) {
 					$image = $deviantart->parsePageResource($resource);
 
-					if ($image === null)
+					if ($image === null || empty($image['id']))
 						continue;
 
-					if (isset($images[$image['id']])) {
-						if (in_array($gallery['title'], $images[$image['id']]['galleries'])) {
+					$mongoImage = $db->images->findOne(array('id' => $image['id']));
+
+					if ($mongoImage !== null) {
+						if (in_array($gallery['title'], $mongoImage['server']['galleries'])) {
 							$existImagesCount++;
 						} else {
-							$images[$image['id']]['galleries'][] = $gallery['title'];
+							$db->images->update(['_id' => $mongoImage['_id']], [
+								'$set' => [
+									'server_updated' => time(),
+									'server_deleted' => false,
+								],
+								'$addToSet' => [
+									'server.galleries' => $gallery['title'],
+								],
+							]);
 						}
 					} else {
 						$image['galleries'] = array($gallery['title']);
-						$images[$image['id']] = $image;
+
+						$db->images->insert([
+							'id' => $image['id'],
+							'local' => $image,
+							'local_created' => time(),
+							'local_updated' => time(),
+							'local_deleted' => false,
+							'server' => $image,
+							'server_created' => time(),
+							'server_updated' => time(),
+							'server_deleted' => false,
+						]);
 					}
 				}
 			}
@@ -98,6 +131,6 @@ foreach ($galleries as $gallery) {
 	echo 'end: '.$gallery['title'].' '.round(microtime(true)-$t)."s\n";
 }
 
-unset($images['']);
+//unset($images['']);
 
-file_put_contents('data/images.json', json_encode($images));
+//file_put_contents('data/images.json', json_encode($images));

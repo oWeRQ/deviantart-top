@@ -2,18 +2,35 @@
 
 error_reporting(E_ALL);
 
+require_once 'classes/Profile.php';
 require_once 'classes/Request.php';
 require_once 'classes/View.php';
 require_once 'classes/DeviantartTop.php';
+require_once 'classes/DeviantartTopMongo.php';
 
 define('IS_ADMIN', Request::getUsername() === 'admin');
 
+Profile::begin('total');
+Profile::begin('init');
+
+//$deviantartTop = new DeviantartTop;
+$deviantartTop = new DeviantartTopMongo;
+
 $view = new View('layout');
 
-$galleries = DeviantartTop::getData('galleries');
-$keywords = DeviantartTop::getData('keywords');
-$categories = DeviantartTop::getData('categories');
-$profiles = DeviantartTop::getData('profiles');
+$galleries = $deviantartTop->getData('galleries', [], [
+	'sort' => array(
+		'local.position' => 1,
+	),
+]);
+$keywords = $deviantartTop->getData('keywords', [], [
+	'limit' => 200,
+	'sort' => [
+		'name' => 1
+	],
+]);
+$categories = $deviantartTop->getData('categories');
+$profiles = $deviantartTop->getData('profiles');
 
 // filter params
 $exclude_galleries = (array)Request::param('exclude', array());
@@ -35,7 +52,7 @@ $username = (string)Request::param('username', '');
 $title = (string)Request::param('title', '');
 
 list($titleCmp, $titleParams) = Request::parseQuery($title);
-$titleRegex = '#(^|\s)'.$titleCmp.'(\s|$)#ui';
+$titleRegex = '/(^|\s)'.$titleCmp.'(\s|$)/ui';
 
 if (isset($titleParams['by'])) {
 	$username = $titleParams['by'];
@@ -46,6 +63,8 @@ if (isset($titleParams['by'])) {
 $categoriesQuery = isset($titleParams['cat']) ? preg_split('/\s*,\s*/', $titleParams['cat']) : array();
 
 $title = Request::buildQuery($titleCmp, $titleParams);
+
+Profile::end('init');
 
 // get top
 $topOffset = $topLimit*($page-1);
@@ -71,7 +90,7 @@ $topQuery = compact(
 	'sortDir'
 );
 
-$authors = DeviantartTop::getTop($query, $topQuery);
+$authors = $deviantartTop->getTop($query, $topQuery);
 
 $pages = ceil(count($authors)/$topLimit);
 $authors = array_slice($authors, $topOffset, $topLimit);
@@ -102,6 +121,7 @@ $userLimitsParams = http_build_query(array(
 ));
 
 // render
+Profile::begin('render');
 if (Request::isAjax()) {
 	$authorsHtml = array();
 
@@ -116,13 +136,15 @@ if (Request::isAjax()) {
 		), true);
 	}
 
-	$prevUrl = '?'.$galleriesParams.'&'.$limitsParams.'&title='.$title.'&page='.($page-1);
-	$nextUrl = '?'.$galleriesParams.'&'.$limitsParams.'&title='.$title.'&page='.($page+1);
+	$baseUrl = '?'.$galleriesParams.'&'.$limitsParams.'&title='.$title;
+	$prevUrl = $baseUrl.'&page='.($page-1);
+	$nextUrl = $baseUrl.'&page='.($page+1);
 
 	echo json_encode(compact(
 		'authors',
 		'authorsHtml',
 		'page',
+		'baseUrl',
 		'prevUrl',
 		'nextUrl'
 	));
@@ -159,4 +181,10 @@ if (Request::isAjax()) {
 		'keywords',
 		'galleries'
 	));
+}
+Profile::end('render');
+Profile::end('total');
+
+if (!Request::isAjax()) {
+	echo Profile::consoleScript();
 }
