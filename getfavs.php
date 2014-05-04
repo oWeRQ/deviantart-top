@@ -1,16 +1,14 @@
 <?php
 
-require_once 'classes/Deviantart.php';
+require_once 'classes/autoload.php';
+
 //Deviantart::$cache_time = 3600*3;
 $deviantart = new Deviantart;
-
-$mongo = new MongoClient();
-$db = $mongo->deviantart_top;
+$deviantartTop = new DeviantartTop;
 
 $username = 'oWeRQ';
 $userid = 16413375;
 $perPage = 24;
-//$perRequest = 40;
 $perRequest = 8;
 $trys = 3;
 
@@ -19,9 +17,8 @@ $images = array();
 
 if ($argc > 1) {	
 	$update_galleries = array_map('strtolower', array_slice($argv, 1));
-	//$images = json_decode(file_get_contents('data/images.json'), true);
 } else {
-	$db->images->update(array(
+	$deviantartTop->db->images->update(array(
 		'server_deleted' => false,
 	), array(
 		'$set' => array(
@@ -86,13 +83,13 @@ foreach ($galleries as $gallery) {
 					if ($image === null || empty($image['id']))
 						continue;
 
-					$mongoImage = $db->images->findOne(array('id' => $image['id']));
+					$mongoImage = $deviantartTop->db->images->findOne(array('id' => $image['id']));
 
 					if ($mongoImage !== null) {
 						if (in_array($gallery['title'], $mongoImage['server']['galleries'])) {
 							$existImagesCount++;
 						} else {
-							$db->images->update(['_id' => $mongoImage['_id']], [
+							$deviantartTop->db->images->update(['_id' => $mongoImage['_id']], [
 								'$set' => [
 									'server_updated' => time(),
 									'server_deleted' => false,
@@ -105,7 +102,7 @@ foreach ($galleries as $gallery) {
 					} else {
 						$image['galleries'] = array($gallery['title']);
 
-						$db->images->insert([
+						$deviantartTop->db->images->insert([
 							'id' => $image['id'],
 							'local' => $image,
 							'local_created' => time(),
@@ -130,7 +127,3 @@ foreach ($galleries as $gallery) {
 
 	echo 'end: '.$gallery['title'].' '.round(microtime(true)-$t)."s\n";
 }
-
-//unset($images['']);
-
-//file_put_contents('data/images.json', json_encode($images));

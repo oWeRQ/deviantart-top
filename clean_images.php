@@ -1,12 +1,8 @@
 <?php
 
-//$images = json_decode(file_get_contents('data/images.json'), true);
+require_once 'classes/autoload.php';
 
-require_once 'classes/Profile.php';
-require_once 'classes/DeviantartTop.php';
-require_once 'classes/DeviantartTopMongo.php';
-
-$deviantartTop = new DeviantartTopMongo;
+$deviantartTop = new DeviantartTop;
 
 $images = $deviantartTop->getData('images');
 

@@ -1,6 +1,8 @@
 <?php
 
-require_once 'classes/ImageSig.php';
+require_once 'classes/autoload.php';
+
+$deviantartTop = new DeviantartTop;
 $imageSig = new ImageSig();
 
 $find_image = false;
@@ -10,8 +12,11 @@ $same_galleries = isset($_REQUEST['same_galleries']);
 
 $similar = array();
 
-$images = json_decode(file_get_contents('data/images.json'), true);
-$sigs = json_decode(file_get_contents('data/images_sigs.json'), true);
+$images = $deviantartTop->getImages();
+$sigs = [];
+foreach ($deviantartTop->db->images->find([], ['id' => true, 'sig' => true]) as $image) {
+	$sigs[$image['id']] = $image['sig']['code'];
+}
 
 if ($image_id) {
 	$time_start = microtime(true);
@@ -191,7 +196,6 @@ if ($image_id) {
 			202363262,
 			209246902,
 			76115732,
-			341762714,
 			264031381,
 			337186363,
 		];

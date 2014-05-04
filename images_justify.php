@@ -1,6 +1,9 @@
 <?php
 
-$images = json_decode(file_get_contents('data/images.json'), true);
+require_once 'classes/autoload.php';
+
+$deviantartTop = new DeviantartTopMongo;
+$images = $deviantartTop->getImages();
 
 $images = array_filter($images, function($image){
 	if (in_array('Abstract', $image['galleries'])) {	

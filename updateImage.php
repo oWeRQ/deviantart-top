@@ -1,10 +1,8 @@
 <?php
 
-require_once 'classes/Profile.php';
-require_once 'classes/DeviantartTop.php';
-require_once 'classes/DeviantartTopMongo.php';
+require_once 'classes/autoload.php';
 
-$deviantartTop = new DeviantartTopMongo;
+$deviantartTop = new DeviantartTop;
 
 $galleries_data = $deviantartTop->getData('galleries');
 

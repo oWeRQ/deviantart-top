@@ -2,7 +2,7 @@
 
 error_reporting(E_ALL);
 
-require_once 'classes/Deviantart.php';
+require_once 'classes/autoload.php';
 
 $deviantart = new Deviantart;
 

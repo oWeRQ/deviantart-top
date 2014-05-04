@@ -1,13 +1,10 @@
 <?php
 
-require_once 'classes/Profile.php';
-require_once 'classes/Deviantart.php';
-require_once 'classes/DeviantartTop.php';
-require_once 'classes/DeviantartTopMongo.php';
+require_once 'classes/autoload.php';
 
 Deviantart::$cache_time = 3600*24*14;
 $deviantart = new Deviantart;
-$deviantartTop = new DeviantartTopMongo;
+$deviantartTop = new DeviantartTop;
 
 $authors = $deviantartTop->db->images->distinct('local.author');
 rsort($authors);

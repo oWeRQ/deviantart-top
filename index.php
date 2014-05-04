@@ -2,20 +2,14 @@
 
 error_reporting(E_ALL);
 
-require_once 'classes/Profile.php';
-require_once 'classes/Request.php';
-require_once 'classes/View.php';
-require_once 'classes/DeviantartTop.php';
-require_once 'classes/DeviantartTopMongo.php';
-
-define('IS_ADMIN', Request::getUsername() === 'admin');
+require_once 'classes/autoload.php';
 
 Profile::begin('total');
 Profile::begin('init');
 
-//$deviantartTop = new DeviantartTop;
-$deviantartTop = new DeviantartTopMongo;
+define('IS_ADMIN', Request::getUsername() === 'admin');
 
+$deviantartTop = new DeviantartTop;
 $view = new View('layout');
 
 $galleries = $deviantartTop->getData('galleries', [], [

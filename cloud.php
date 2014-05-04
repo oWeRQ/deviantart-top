@@ -1,5 +1,9 @@
 <?php
 
+require_once 'classes/autoload.php';
+
+$deviantartTop = new DeviantartTop;
+
 $count = 200;
 
 $minSize = 0.75;
@@ -8,7 +12,7 @@ $unit = 'em';
 
 $query = @$_REQUEST['q'];
 
-$keywords = json_decode(file_get_contents('data/keywords.json'), true);
+$keywords = $deviantartTop->getData('keywords');
 
 $keywords = array_slice($keywords, 0, $count, true);
 

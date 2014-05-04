@@ -1,6 +1,10 @@
 <?php
 
-$images = json_decode(file_get_contents('data/images.json'), true);
+require_once 'classes/autoload.php';
+
+$deviantartTop = new DeviantartTop;
+
+$images = $deviantartTop->getImages();
 
 $keywords = array();
 $categories = array();
@@ -23,5 +27,27 @@ foreach ($images as $image) {
 arsort($keywords);
 arsort($categories);
 
-file_put_contents('data/keywords.json', json_encode($keywords));
-file_put_contents('data/categories.json', json_encode($categories));
+foreach (['keywords', 'categories'] as $name) {
+	$db->$name->remove();
+
+	foreach ($$name as $record_name => $record_value) {
+		$record = array(
+			'name' => $record_name,
+			'count' => count($record_value),
+			'images' => $record_value,
+		);
+
+		$pk = 'name';
+		$db->$name->save(array(
+			'id' => $record[$pk],
+			'local' => $record,
+			'local_created' => time(),
+			'local_updated' => time(),
+			'local_deleted' => false,
+			'server' => $record,
+			'server_created' => time(),
+			'server_updated' => time(),
+			'server_deleted' => false,
+		));
+	}
+}

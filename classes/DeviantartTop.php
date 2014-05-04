@@ -2,8 +2,19 @@
 
 class DeviantartTop
 {
+	const RECORD_LOCAL = 1;
+	const RECORD_SERVER = 2;
+	const RECORD_ALL = 3;
+
+	public $mongo;
+	public $db;
 	public $images = null;
-	public $images_by_author = null;
+
+	public function __construct()
+	{
+		$this->mongo = new MongoClient();
+		$this->db = $this->mongo->deviantart_top;
+	}
 
 	public function score($pos, $n)
 	{
@@ -21,14 +32,25 @@ class DeviantartTop
 		return ($phat + $z*$z/(2*$n) - $z*sqrt(($phat*(1-$phat) + $z*$z/(4*$n))/$n)) / (1 + $z*$z/$n);
 	}
 
-	public function getData($name)
+	public function getData($name, array $query = array(), array $cursorQuery = array())
 	{
-		Profile::begin('DeviantartTop::getData');
+		Profile::begin('DeviantartTopMongo::getData');
 
-		$filename = "data/$name.json";
-		$records = json_decode(file_get_contents($filename), true);
+		$records = array();
 
-		Profile::end('DeviantartTop::getData');
+		$query['local_deleted'] = false;
+
+		$cursor = $this->db->$name->find($query);
+
+		foreach ($cursorQuery as $key => $value) {
+			$cursor->$key($value);
+		}
+
+		foreach ($cursor as $record) {
+			$records[$record['id']] = $record['local'];
+		}
+
+		Profile::end('DeviantartTopMongo::getData');
 
 		return $records;
 	}
@@ -42,78 +64,101 @@ class DeviantartTop
 		return $this->images;
 	}
 
+	public function saveData($name, $id, $record, $record_type = 3)
+	{
+		$dbRecord = $this->db->$name->findOne(['id' => $id]);
+
+		if ($dbRecord !== null) {
+			$update = [];
+
+			if ($record_type & self::RECORD_LOCAL) {
+				$update['local'] = $record;
+				$update['local_updated'] = time();
+			} elseif ($record_type & self::RECORD_SERVER) {
+				$update['server'] = $record;
+				$update['server_updated'] = time();
+			}
+
+			$this->db->$name->update(['id' => $id], [
+				'$set' => $update,
+			]);
+		} else {
+			$insert = [
+				'id' => $id,
+			];
+
+			if ($record_type & self::RECORD_LOCAL) {
+				$insert['local'] = $record;
+				$insert['local_created'] = time();
+				$insert['local_updated'] = time();
+				$insert['local_deleted'] = false;
+			} elseif ($record_type & self::RECORD_SERVER) {
+				$insert['server'] = $record;
+				$insert['server_created'] = time();
+				$insert['server_updated'] = time();
+				$insert['server_deleted'] = false;
+			}
+
+			$this->db->$name->insert($insert);
+		}
+	}
+
 	public function getUserImages($username)
 	{
-		Profile::begin('DeviantartTop::getUserImages');
+		Profile::begin('DeviantartTopMongo::getUserImages');
 
-		if ($this->images_by_author === null) {
-			$images = $this->getImages();
+		$images = $this->getData('images', ['local.author' => $username]);
 
-			$this->images_by_author = array();
-			foreach ($images as $image) {
-				if (!array_key_exists($image['author'], $this->images_by_author))
-					$this->images_by_author[$image['author']] = array();
+		Profile::end('DeviantartTopMongo::getUserImages');
 
-				$this->images_by_author[$image['author']][$image['id']] = $image;
-			}
-		}
-
-		Profile::end('DeviantartTop::getUserImages');
-
-		if (!array_key_exists($username, $this->images_by_author))
-			return array();
-
-		return $this->images_by_author[$username];
+		return $images;
 	}
 
 	public function getFavImages($username, array $query)
 	{
-		Profile::begin('DeviantartTop::getFavImages');
+		Profile::begin('DeviantartTopMongo::getFavImages');
 
-		$images = $this->getUserImages($username);
+		$mongoQuery = [
+			'local.author' => $username,
+		];
 
-		if (empty($images))
-			return array();
-
-		$images = array_values(array_filter($images, function($image) use($query){
-			if ($query['titleCmp'] && !preg_match($query['titleRegex'], $image['title']))
-				return false;
-			
-			foreach ($query['exclude_galleries'] as $gallery) {
-				if (in_array($gallery, $image['galleries']))
-					return false;
-			}
-
-			if (!empty($query['categoriesQuery'])) {
-				$categories_count = count(array_intersect($query['categoriesQuery'], $image['categories']));
-				if ($categories_count == 0)
-					return false;
-			}
-			
-			return true;
-		}));
-
-		if (!empty($query['checked_galleries'])) {
-			$images = array_values(array_filter($images, function($image) use($query){
-				$diff_count = count(array_diff($query['checked_galleries'], $image['galleries']));
-				$checked_count = count($query['checked_galleries']);
-
-				if ($query['condition'] == 'or')
-					return $diff_count < $checked_count;
-				elseif ($query['condition'] == 'and')
-					return $diff_count === 0;
-				elseif ($query['condition'] == 'only')
-					return $diff_count === 0 && $checked_count === count($image['galleries']);
-				elseif ($query['condition'] == 'xor')
-					return $diff_count === $checked_count-$query['intersect'];
-			}));
+		if ($query['titleCmp']) {
+			$mongoQuery['local.title'] = [
+				'$regex' => new MongoRegex($query['titleRegex']),
+			];
 		}
 
-		usort($images, function($a, $b){
-			return $a['id'] > $b['id'] ? -1 : 1;
-		});
+		if (!empty($query['checked_galleries'])) {
+			if ($query['condition'] == 'or') {
+				$mongoQuery['local.galleries'] = [
+					'$in' => $query['checked_galleries'],
+				];
+			} elseif ($query['condition'] == 'and') {
+				$mongoQuery['local.galleries'] = [
+					'$all' => $query['checked_galleries'],
+				];
+			} elseif ($query['condition'] == 'only') {
+				$mongoQuery['local.galleries'] = $query['checked_galleries'];
+			}
+		}
 
-		Profile::end('DeviantartTop::getFavImages');
+		if (!empty($query['exclude_galleries']) && $query['condition'] !== 'only') {
+			$mongoQuery['local.galleries']['$nin'] = $query['exclude_galleries'];
+		}
+
+		if (!empty($query['categoriesQuery'])) {
+			$mongoQuery['local.categories'] = [
+				'$in' => $query['categoriesQuery'],
+			];
+		}
+
+		$images = $this->getData('images', $mongoQuery, [
+			'sort' => [
+				'id' => -1,
+			],
+		]);
+
+		Profile::end('DeviantartTopMongo::getFavImages');
 
 		return $images;
 	}
