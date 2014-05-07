@@ -1,11 +1,10 @@
 <? if ($page > 1): ?>
-	<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=$title?>&amp;page=<?=$page-1?>" class="m-button showPrev">Show Prev</a>
+	<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=$title?>&amp;page=<?=$page-1?>" class="m-button i-showPrev">Show Prev</a>
 <? endif ?>
 
-<div class="authors-list">
-	<div id="page_<?=$page?>" class="page" data-num="<?=$page?>">
+<div class="b-pages">
+	<div id="page_<?=$page?>" class="b-pages-item" data-num="<?=$page?>">
 		<? foreach ($authors as $i => $author): ?>
-			<? //require 'index.item.tpl.php'; ?>
 			<? $this->renderPartial('_item', array(
 				'i' => $i,
 				'author' => $author,
@@ -19,7 +18,7 @@
 </div>
 
 <? if ($page < $pages): ?>
-	<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=$title?>&amp;page=<?=$page+1?>" class="m-button showMore">Show More</a>
+	<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=$title?>&amp;page=<?=$page+1?>" class="m-button i-showMore">Show More</a>
 <? endif ?>
 
 <? if (IS_ADMIN): ?>
@@ -43,7 +42,7 @@
 	</ul>
 </div>
 
-<div class="updateControl">
+<div class="b-updateControl">
 	<a href="#" class="closeControl closeButton"></a>
 	<form action="updateImage.php" method="post">
 		<input type="hidden" name="action" value="setGalleries">
@@ -67,3 +66,5 @@
 	</form>
 </div>
 <? endif ?>
+
+<script src="js/index.js"></script>

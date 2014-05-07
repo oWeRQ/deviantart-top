@@ -17,14 +17,14 @@ $(function(){
 		$(this).prev('input').val('');
 	});
 
-	var authorsList = $('.authors-list');
+	var authorsList = $('.b-pages');
 
-	authorsList.on('click', '.moreImages', function(e){
+	authorsList.on('click', '.m-moreImages', function(e){
 		e.preventDefault();
 
 		var link = $(this),
-			imagesBlock = $(this).closest('.b-author'),
-			imagesList = imagesBlock.find('.b-images'),
+			imagesBlock = $(this).closest('.b-images'),
+			imagesList = imagesBlock.find('.b-images-list'),
 			username = imagesBlock.data('username'),
 			imagesLoaded = imagesBlock.data('images-loaded');
 			imagesTotal = imagesBlock.data('images-total');
@@ -54,7 +54,7 @@ $(function(){
 			$.each(author.images, function(i, image){
 				var link = $('<a>', {
 					id: 'image_'+image.id,
-					'class': 'showInGallery',
+					'class': 'm-showInGallery',
 					href: 'images/original/'+image.filename,
 					target: '_blank',
 					title: image.title,
@@ -69,12 +69,12 @@ $(function(){
 					append: [
 						link,
 						$('<a>', {
-							'class': 'similar',
-							href: 'similar.php?id='+image.id,
+							'class': 'm-similar',
+							href: 'm-similar.php?id='+image.id,
 							target: '_blank'
 						}),
 						$('<a>', {
-							'class': 'update',
+							'class': 'm-update',
 							href: '#'
 						})
 					],
@@ -96,7 +96,7 @@ $(function(){
 		}, 'json');
 	});
 
-	var pages = $('.page');
+	var pages = $('.b-pages-item');
 	var currentPage = null;
 	var pageInput = $('.l-sidebar input[name=page]');
 
@@ -123,7 +123,7 @@ $(function(){
 		}
 	};
 
-	var showPrev = $('.showPrev').click(function(e){
+	var showPrev = $('.i-showPrev').click(function(e){
 		e.preventDefault();
 
 		var link = $(this),
@@ -146,7 +146,7 @@ $(function(){
 
 			var page = $('<div>', {
 				id: 'page_'+data.page,
-				'class': 'page',
+				'class': 'b-pages-item',
 				data: {
 					num: data.page
 				}
@@ -162,7 +162,7 @@ $(function(){
 		});
 	});
 
-	var showMore = $('.showMore').click(function(e){
+	var showMore = $('.i-showMore').click(function(e){
 		e.preventDefault();
 
 		var link = $(this),
@@ -182,7 +182,7 @@ $(function(){
 
 			var page = $('<div>', {
 				id: 'page_'+data.page,
-				'class': 'page',
+				'class': 'b-pages-item',
 				data: {
 					num: data.page
 				}
@@ -234,19 +234,19 @@ $(function(){
 
 		//window.scrollTo(window.scrollX, imagesBlock.prop('offsetTop'));
 	};
-	authorsList.on('click', '.b-author', function(){
+	authorsList.on('click', '.b-images', function(){
 		setImagesBlock(this);
 	});
 
 	var gallery = $.gallery({
 		onActivate: function(){
 			if (imagesBlock)
-				imagesBlock.find('.showInGallery').removeClass('cursor').eq(this.idx).addClass('cursor');
+				imagesBlock.find('.m-showInGallery').removeClass('m-cursor').eq(this.idx).addClass('m-cursor');
 		},
 		thumbsSlider: {
 			paddingRight: 10,
 			onNextDisabled: function(){
-				imagesBlock.find('.moreImages').click();
+				imagesBlock.find('.m-moreImages').click();
 			}
 		}
 	}, galleryEl);
@@ -264,33 +264,33 @@ $(function(){
 			else if (e.isKey('right', 'space', 'd'))
 				gallery.setActive(gallery.idx+1);
 			else if (e.isKey('+', 'w')) {
-				imagesBlock.find('.showInGallery').eq(gallery.idx).addClass('selected');
+				imagesBlock.find('.m-showInGallery').eq(gallery.idx).addClass('selected');
 				gallery.setActive(gallery.idx+1);
 			}
 			else if (e.isKey('-', 's')) {
-				imagesBlock.find('.showInGallery').eq(gallery.idx).removeClass('selected');
+				imagesBlock.find('.m-showInGallery').eq(gallery.idx).removeClass('selected');
 				gallery.setActive(gallery.idx+1);
 			}
 			else if (e.isKey('e')) {
 				galleryModal.close();
-				imagesBlock.find('.actionAddGallery').click();
+				imagesBlock.find('.i-addGallery').click();
 			}
 			else if (e.isKey('r')) {
 				galleryModal.close();
-				imagesBlock.find('.actionRemoveGallery').click();
+				imagesBlock.find('.i-removeGallery').click();
 			}
 		} else if (sidebarInputs.filter(':focus').length === 0) {
 			if (!imagesBlock || imagesBlock.length === 0)
-				imagesBlock = authorsList.find('.b-author:first');
+				imagesBlock = authorsList.find('.b-images:first');
 
-			var imagesLinks = imagesBlock.find('.showInGallery');
-			var cursor = imagesLinks.filter('.cursor:first');
+			var imagesLinks = imagesBlock.find('.m-showInGallery');
+			var cursor = imagesLinks.filter('.m-cursor:first');
 			var cursorIdx = imagesLinks.index(cursor);
 
 			if (cursorIdx === -1)
 				cursorIdx = 0;
 
-			cursor.removeClass('cursor');
+			cursor.removeClass('m-cursor');
 
 			if (e.isKey('left', 'a')) {
 				e.preventDefault();
@@ -301,17 +301,17 @@ $(function(){
 			} else if (e.isKey('up', 'w')) {
 				e.preventDefault();
 				setImagesBlock(imagesBlock.prev());
-				imagesLinks = imagesBlock.find('.showInGallery');
+				imagesLinks = imagesBlock.find('.m-showInGallery');
 			} else if (e.isKey('down', 's')) {
 				e.preventDefault();
 				setImagesBlock(imagesBlock.next());
-				imagesLinks = imagesBlock.find('.showInGallery');
+				imagesLinks = imagesBlock.find('.m-showInGallery');
 			} else if (e.isKey('space', 'enter')) {
 				e.preventDefault();
 				cursor.click();
 			}
 
-			imagesLinks.eq(cursorIdx).addClass('cursor');
+			imagesLinks.eq(cursorIdx).addClass('m-cursor');
 		}
 	});
 
@@ -333,13 +333,13 @@ $(function(){
 		galleryModal.windowCenter.updatePosition();
 	};
 
-	authorsList.on('click', '.showInGallery', function(e){
+	authorsList.on('click', '.m-showInGallery', function(e){
 		e.preventDefault();
 
 		var link = $(this),
 			idx = link.closest('li').index();
 
-		setImagesBlock(link.closest('.b-author'));
+		setImagesBlock(link.closest('.b-images'));
 
 		if (e.ctrlKey || e.metaKey) {
 			link.toggleClass('selected');
@@ -349,7 +349,7 @@ $(function(){
 		} else if (e.shiftKey) {
 			var i,
 				lastSelected = parseInt(imagesBlock.data('last-selected'), 10),
-				galleryLinks = imagesBlock.find('.showInGallery'),
+				galleryLinks = imagesBlock.find('.m-showInGallery'),
 				checked = galleryLinks.eq(lastSelected).hasClass('selected');
 
 			if (idx > lastSelected) {
@@ -368,7 +368,7 @@ $(function(){
 		updateGalleryPos();
 		$(window).on('resize', updateGalleryPos);
 
-		var images = imagesBlock.find('.b-images > li').map(function(){
+		var images = imagesBlock.find('.b-images-list > li').map(function(){
 			var link = this.firstElementChild;
 			return {
 				thumb: link.firstElementChild.src,
@@ -390,7 +390,7 @@ $(function(){
 	});
 
 	var updateControl = {
-		el: $('.updateControl'),
+		el: $('.b-updateControl'),
 		activeLink: null,
 		imagesBlock: null,
 		init: function(){
@@ -426,7 +426,7 @@ $(function(){
 			}
 
 			this.activeLink = $link;
-			this.imagesBlock = this.activeLink.closest('.b-author');
+			this.imagesBlock = this.activeLink.closest('.b-images');
 
 			var imageGalleries = this.activeLink.data('galleries').split(', ');
 
@@ -461,16 +461,16 @@ $(function(){
 	};
 	updateControl.init();
 
-	authorsList.on('contextmenu', '.showInGallery', function(e){
+	authorsList.on('contextmenu', '.m-showInGallery', function(e){
 		e.preventDefault();
 
 		updateControl.show(this);
 	});
 
-	authorsList.on('click', '.update', function(e){
+	authorsList.on('click', '.m-update', function(e){
 		e.preventDefault();
 
-		updateControl.show($(this).siblings('.showInGallery'));
+		updateControl.show($(this).siblings('.m-showInGallery'));
 	});
 
 	var checkMenu = {
@@ -486,7 +486,7 @@ $(function(){
 				e.preventDefault();
 
 				var check = $(this).data('check');
-				var items = that.imagesBlock.find('.showInGallery');
+				var items = that.imagesBlock.find('.m-showInGallery');
 				var selected = items.filter('.selected');
 				var notSelected = items.not('.selected');
 
@@ -521,7 +521,7 @@ $(function(){
 
 			this.activeLink = $link;
 			this.checkbox = $link.find('input[type=checkbox]');
-			this.imagesBlock = this.activeLink.closest('.b-author');
+			this.imagesBlock = this.activeLink.closest('.b-images');
 			this.username = this.imagesBlock.data('username');
 
 			var linkPos = this.activeLink.offset();
@@ -547,14 +547,14 @@ $(function(){
 	};
 	checkMenu.init();
 
-	$('.actionCheckAll input').prop('checked', false);
+	$('.i-checkAll input').prop('checked', false);
 
-	authorsList.on('click', '.actionCheckAll input', function(e){
+	authorsList.on('click', '.i-checkAll input', function(e){
 		//e.preventDefault();
 		//e.stopPropagation();
 
 		var checkbox = $(this);
-		var items = checkbox.closest('.b-author').find('.showInGallery');
+		var items = checkbox.closest('.b-images').find('.m-showInGallery');
 
 		if (items.is('.selected'))
 			this.checked = false;
@@ -562,7 +562,7 @@ $(function(){
 		items.toggleClass('selected', this.checked);
 	});	
 
-	authorsList.on('click', '.actionCheckAll', function(e){
+	authorsList.on('click', '.i-checkAll', function(e){
 		//e.preventDefault();
 
 		if (this === e.target)
@@ -634,7 +634,7 @@ $(function(){
 			$(document).on('keypress', this.keypress);
 
 			this.activeLink = $link;
-			this.imagesBlock = this.activeLink.closest('.b-author');
+			this.imagesBlock = this.activeLink.closest('.b-images');
 			this.username = this.imagesBlock.data('username');
 
 			var linkPos = this.activeLink.offset();
@@ -669,28 +669,28 @@ $(function(){
 	};
 	moveMenu.init();
 
-	authorsList.on('click', '.actionAddGallery', function(e){
+	authorsList.on('click', '.i-addGallery', function(e){
 		e.preventDefault();
 
 		moveMenu.action = 'addGallery';
 		moveMenu.open(this);
 	});
 
-	authorsList.on('click', '.actionRemoveGallery', function(e){
+	authorsList.on('click', '.i-removeGallery', function(e){
 		e.preventDefault();
 
 		moveMenu.action = 'removeGallery';
 		moveMenu.open(this);
 	});
 
-	authorsList.on('click', '.actionDeleteFavourite', function(e){
+	authorsList.on('click', '.i-deleteFavourite', function(e){
 		e.preventDefault();
 
 		if (!confirm('Delete all selected favourites?'))
 			return;
 
 		var link = $(this);
-		setImagesBlock(link.closest('.b-author'));
+		setImagesBlock(link.closest('.b-images'));
 		var username = imagesBlock.data('username');
 		var selectedImages = imagesBlock.find('.selected').map(function(){
 			return $(this).data('id');

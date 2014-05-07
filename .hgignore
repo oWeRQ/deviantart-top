@@ -4,3 +4,6 @@ galleries/*
 drop/*
 backup/*
 *.json
+.cookie
+.htaccess
+.htpasswd

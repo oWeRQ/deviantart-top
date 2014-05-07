@@ -12,7 +12,7 @@ $cursor = $deviantartTop->db->images->find([
 ]);
 
 $userId = 16413375;
-$maxCalls = 40;
+$maxCalls = 1;
 $calls = [];
 
 $progress = new Progress($cursor->count());
@@ -29,6 +29,11 @@ foreach ($cursor as $image) {
 
 	if (count($calls) >= $maxCalls) {
 		$responses = $deviantart->sendCalls($calls, 'post', 1);
+
+		if (!is_array($responses)) {
+			var_dump($responses);
+			die();
+		}
 
 		foreach ($responses as $response) {
 			if ($response['response']['status'] != 'SUCCESS') {	

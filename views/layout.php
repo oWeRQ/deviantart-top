@@ -16,7 +16,6 @@
 	<script src="js/jquery.modalWindow.js"></script>
 	<script src="js/jquery.thumbsSlider.js"></script>
 	<script src="js/jquery.gallery.js"></script>
-	<script src="js/index.js"></script>
 </head>
 <body>
 

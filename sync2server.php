@@ -17,7 +17,7 @@ $cursor = $deviantartTop->db->images->find([
 ]);
 
 $userId = 16413375;
-$maxCalls = 40;
+$maxCalls = 48;
 $calls = [];
 $updates = [];
 
@@ -74,12 +74,14 @@ foreach ($cursor as $image) {
 			else
 				continue;
 
-			if ($response['response']['status'] != 'SUCCESS')
+			if ($response['response']['status'] != 'SUCCESS') {
+				var_dump($response);
 				unset($updates[$image_id]);
+			}
 		}
 
 		foreach ($updates as $image_id => $update) {
-			$deviantartTop->db->images->update(['id' => $image_id], ['$set' => $update]);
+			$deviantartTop->db->images->update(['id' => (string)$image_id], ['$set' => $update]);
 		}
 
 		$calls = [];

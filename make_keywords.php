@@ -28,7 +28,7 @@ arsort($keywords);
 arsort($categories);
 
 foreach (['keywords', 'categories'] as $name) {
-	$db->$name->remove();
+	$deviantartTop->db->$name->remove();
 
 	foreach ($$name as $record_name => $record_value) {
 		$record = array(
@@ -38,7 +38,7 @@ foreach (['keywords', 'categories'] as $name) {
 		);
 
 		$pk = 'name';
-		$db->$name->save(array(
+		$deviantartTop->db->$name->save(array(
 			'id' => $record[$pk],
 			'local' => $record,
 			'local_created' => time(),

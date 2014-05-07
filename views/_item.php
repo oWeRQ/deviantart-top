@@ -1,14 +1,14 @@
-<div class="b-author" data-username="<?=$author['username']?>" data-images-total="<?=$author['favourites']?>" data-images-loaded="<?=$imagesOffset+count($author['images'])?>">
+<div class="b-images" data-username="<?=$author['username']?>" data-images-total="<?=$author['favourites']?>" data-images-loaded="<?=$imagesOffset+count($author['images'])?>">
 	<? if (IS_ADMIN): ?>
-	<div class="actions">
-		<span class="m-button m-down actionCheckAll"><input type="checkbox"></span>
-		<span class="m-button m-down actionAddGallery">Add Collection</span>
-		<span class="m-button m-down actionRemoveGallery">Remove Collection</span>
-		<span class="m-button actionDeleteFavourite">Delete Favourites</span>
+	<div class="b-images-actions">
+		<span class="m-button m-down i-checkAll"><input type="checkbox"></span>
+		<span class="m-button m-down i-addGallery">Add Collection</span>
+		<span class="m-button m-down i-removeGallery">Remove Collection</span>
+		<span class="m-button i-deleteFavourite">Delete Favourites</span>
 	</div>
 	<? endif ?>
 	<h3>
-		<span class="number"><?=$i+$topOffset+1?></span>
+		<span class="b-images-number"><?=$i+$topOffset+1?></span>
 		<a target="_blank" href="?title=by:<?=$author['username']?>&amp;<?=$galleriesParams?>&amp;<?=$userLimitsParams?>"><?=$author['username']?></a>
 		<small>
 			<?=$author['favourites']?>
@@ -19,20 +19,20 @@
 		</small>
 		<sup><a target="_blank" href="http://<?=$author['username']?>.deviantart.com/gallery/">DA</a></sup>
 	</h3>
-	<ul class="b-inline b-images">
+	<ul class="b-inline b-images-list">
 		<? foreach ($author['images'] as $image): ?>
 			<li>
-				<a id="image_<?=$image['id']?>" class="showInGallery" href="images/original/<?=$image['filename']?>" data-big="<?=$image['page']?>" target="_blank" title="<?=$image['title']?>" data-galleries="<?=join(', ', $image['galleries'])?>" data-id="<?=$image['id']?>">
+				<a id="image_<?=$image['id']?>" class="m-showInGallery" href="images/original/<?=$image['filename']?>" data-big="<?=$image['page']?>" target="_blank" title="<?=$image['title']?>" data-galleries="<?=join(', ', $image['galleries'])?>" data-id="<?=$image['id']?>">
 					<img src="images/mythumbs/<?=$image['filename']?>">
 				</a>
-				<a class="similar" href="similar.php?id=<?=$image['id']?>" target="_blank"></a>
+				<a class="m-similar" href="similar.php?id=<?=$image['id']?>" target="_blank"></a>
 				<? if (IS_ADMIN): ?>
-					<a class="update" href="#"></a>
+					<a class="m-update" href="#"></a>
 				<? endif ?>
 			</li>
 		<? endforeach ?>
 	</ul>
 	<? if(count($author['images']) < $author['favourites']): ?>
-		<a href="#" class="moreImages">More Images (<span class="count"><?=$author['favourites']-$imagesOffset-count($author['images'])?></span>)</a>
+		<a href="#" class="m-moreImages">More Images (<span class="count"><?=$author['favourites']-$imagesOffset-count($author['images'])?></span>)</a>
 	<? endif ?>
 </div>

@@ -32,15 +32,15 @@ class DeviantartTop
 		return ($phat + $z*$z/(2*$n) - $z*sqrt(($phat*(1-$phat) + $z*$z/(4*$n))/$n)) / (1 + $z*$z/$n);
 	}
 
-	public function getData($name, array $query = array(), array $cursorQuery = array())
+	public function getData($name, array $mongoQuery = array(), array $cursorQuery = array())
 	{
-		Profile::begin('DeviantartTopMongo::getData');
+		Profile::begin('DeviantartTop::getData');
 
 		$records = array();
 
-		$query['local_deleted'] = false;
+		$mongoQuery['local_deleted'] = false;
 
-		$cursor = $this->db->$name->find($query);
+		$cursor = $this->db->$name->find($mongoQuery);
 
 		foreach ($cursorQuery as $key => $value) {
 			$cursor->$key($value);
@@ -50,7 +50,7 @@ class DeviantartTop
 			$records[$record['id']] = $record['local'];
 		}
 
-		Profile::end('DeviantartTopMongo::getData');
+		Profile::end('DeviantartTop::getData');
 
 		return $records;
 	}
@@ -105,22 +105,18 @@ class DeviantartTop
 
 	public function getUserImages($username)
 	{
-		Profile::begin('DeviantartTopMongo::getUserImages');
+		Profile::begin('DeviantartTop::getUserImages');
 
 		$images = $this->getData('images', ['local.author' => $username]);
 
-		Profile::end('DeviantartTopMongo::getUserImages');
+		Profile::end('DeviantartTop::getUserImages');
 
 		return $images;
 	}
 
-	public function getFavImages($username, array $query)
+	public function getMongoQuery(array $query)
 	{
-		Profile::begin('DeviantartTopMongo::getFavImages');
-
-		$mongoQuery = [
-			'local.author' => $username,
-		];
+		$mongoQuery = [];
 
 		if ($query['titleCmp']) {
 			$mongoQuery['local.title'] = [
@@ -152,13 +148,79 @@ class DeviantartTop
 			];
 		}
 
-		$images = $this->getData('images', $mongoQuery, [
-			'sort' => [
-				'id' => -1,
-			],
-		]);
+		return $mongoQuery;
+	}
 
-		Profile::end('DeviantartTopMongo::getFavImages');
+	public function getAuthors(array $query)
+	{
+		Profile::begin('DeviantartTop::getAuthors');
+
+		$mongoQuery = $this->getMongoQuery($query);
+		$mongoQuery['local_deleted'] = false;
+
+		if ($mongoQuery) {
+			$authors = $this->db->images->aggregate([
+				'$match' => $mongoQuery,
+			], [
+				'$group' => [
+					'_id' => '$local.author',
+					'images' => ['$sum' => 1],
+				],
+			]);
+		} else {
+			$authors = $this->db->images->aggregate([
+				'$group' => [
+					'_id' => '$local.author',
+					'images' => ['$sum' => 1],
+				],
+			]);
+		}
+
+		Profile::end('DeviantartTop::getAuthors');
+
+		return $authors['result'];
+	}
+
+	public function getFavImages($username, array $query, $limit = false, $skip = false)
+	{
+		Profile::begin('DeviantartTop::getFavImages');
+		
+		$images = [];
+
+		$mongoQuery = $this->getMongoQuery($query);
+		$mongoQuery['local.author'] = $username;
+		$mongoQuery['local_deleted'] = false;
+
+		$cursor = $this->db->images->find($mongoQuery);
+
+		$cursor->sort(['id' => -1]);
+
+		if ($limit)
+			$cursor->limit($limit);
+
+		if ($skip)
+			$cursor->skip($skip);
+
+		foreach ($cursor as $image) {
+			$images[] = $image['local'];
+		}
+
+		Profile::end('DeviantartTop::getFavImages');
+
+		return $images;
+	}
+
+	public function getFavImagesCount($username, array $query)
+	{
+		Profile::begin('DeviantartTop::getFavImagesCount');
+
+		$mongoQuery = $this->getMongoQuery($query);
+		$mongoQuery['local.author'] = $username;
+		$mongoQuery['local_deleted'] = false;
+
+		$images = $this->db->images->count($mongoQuery);
+
+		Profile::end('DeviantartTop::getFavImagesCount');
 
 		return $images;
 	}
@@ -167,48 +229,60 @@ class DeviantartTop
 	{
 		Profile::begin('DeviantartTop::getTop');
 
-		$top = array();
-
-		$profiles = $this->getData('profiles');
+		$top = [];
 
 		if (!empty($topQuery['username'])) {
 			$pages = 1;
 
-			if (isset($profiles[$topQuery['username']])) {
-				$profile = $profiles[$topQuery['username']];
-				$images = $this->getFavImages($topQuery['username'], $query);
-				$favourites = count($images);
+			$profile = $this->db->profiles->findOne(['id' => $topQuery['username']]);
+
+			if ($profile) {
+				$profile = $profile['local'];
+
+				$favourites = $this->getFavImagesCount($topQuery['username'], $query);
 
 				$top[] = array(
 					'username' => $topQuery['username'],
-					'percent' => $favourites/$profile['deviations']*100,
+					'percent' => $favourites / $profile['deviations'] * 100,
 					'score' => $this->score($favourites, $profile['deviations']),
 					'wilson_score' => $this->wilson_score($favourites, $profile['deviations']),
 					'favourites' => $favourites,
 					'deviations' => $profile['deviations'],
-					'images' => array_slice($images, $topQuery['imagesOffset'], $topQuery['imagesLimit']),
+					'images' => $this->getFavImages($profile['username'], $query, $topQuery['imagesLimit'], $topQuery['imagesOffset']),
 				);
 			}
 		} else {
-			foreach ($profiles as $profile) {
-				if (isset($profile['deviations']) && $profile['deviations'] >= $topQuery['minDevia']) {
-					$images = $this->getFavImages($profile['username'], $query);
-					$favourites = count($images);
+			Profile::begin('DeviantartTop::getTop step1');
+			$profiles = $this->getData('profiles');
+			$authors = $this->getAuthors($query);
+			Profile::end('DeviantartTop::getTop step1');
+			
+			Profile::begin('DeviantartTop::getTop step2');
+			foreach ($authors as $author) {
+				if (!isset($profiles[$author['_id']]))
+					continue;
 
-					if ($favourites !==0 && $favourites >= $topQuery['minFavs'] && ($topQuery['maxFavs'] === 0 || $favourites <= $topQuery['maxFavs'])) {
+				$profile = $profiles[$author['_id']];
+
+				if (isset($profile['deviations']) && $profile['deviations'] >= $topQuery['minDevia']) {
+					$favourites = $author['images'];
+
+					if ($favourites !== 0 && $favourites >= $topQuery['minFavs'] && ($topQuery['maxFavs'] === 0 || $favourites <= $topQuery['maxFavs'])) {
 						$top[] = array(
 							'username' => $profile['username'],
-							'percent' => $favourites/$profile['deviations']*100,
+							'percent' => $favourites / $profile['deviations'] * 100,
 							'score' => $this->score($favourites, $profile['deviations']),
 							'wilson_score' => $this->wilson_score($favourites, $profile['deviations']),
 							'favourites' => $favourites,
 							'deviations' => $profile['deviations'],
-							'images' => array_slice($images, $topQuery['imagesOffset'], $topQuery['imagesLimit']),
+							'images' => [],
 						);
 					}
 				}
 			}
+			Profile::end('DeviantartTop::getTop step2');
 
+			Profile::begin('DeviantartTop::getTop step3');
 			$sort = $topQuery['sort'];
 			$sortDir = $topQuery['sortDir'];
 
@@ -218,10 +292,25 @@ class DeviantartTop
 
 				return ($a[$sort] > $b[$sort]) ? -$sortDir : $sortDir;
 			});
+			Profile::end('DeviantartTop::getTop step3');
+			
+			Profile::begin('DeviantartTop::getTop step4');
+			$pages = ceil(count($top) / $topQuery['topLimit']);
+			$top = array_slice($top, $topQuery['topOffset'], $topQuery['topLimit']);
+			Profile::end('DeviantartTop::getTop step4');
+
+			Profile::begin('DeviantartTop::getTop step5');
+			foreach ($top as &$topItem) {
+				$topItem['images'] = $this->getFavImages($topItem['username'], $query, $topQuery['imagesLimit'], $topQuery['imagesOffset']);
+			}
+			Profile::end('DeviantartTop::getTop step5');
 		}
 
 		Profile::end('DeviantartTop::getTop');
 
-		return $top;
+		return [
+			'pages' => $pages,
+			'authors' => $top,
+		];
 	}
 }
