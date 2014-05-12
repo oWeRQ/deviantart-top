@@ -84,7 +84,7 @@ input::-moz-focus-inner {
 }
 .m-down:after {
 	content: '\25BC';
-	margin-left: 4px;
+	margin-left: 6px;
 	font-size: 0.8em;
 	color: #666;
 }

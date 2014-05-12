@@ -1,9 +1,9 @@
-<div class="b-images" data-username="<?=$author['username']?>" data-images-total="<?=$author['favourites']?>" data-images-loaded="<?=$imagesOffset+count($author['images'])?>">
+<div class="b-images" data-images-total="<?=$author['favourites']?>" data-images-loaded="<?=$imagesOffset+count($author['images'])?>">
 	<? if (IS_ADMIN): ?>
 	<div class="b-images-actions">
-		<span class="m-button m-down i-checkAll"><input type="checkbox"></span>
-		<span class="m-button m-down i-addGallery">Add Collection</span>
-		<span class="m-button m-down i-removeGallery">Remove Collection</span>
+		<span class="m-button m-down i-checkAll"><input class="i-checkAll-checkbox" type="checkbox"></span>
+		<span class="m-button m-down i-addGallery" data-action="addGallery">Add Collection</span>
+		<span class="m-button m-down i-removeGallery" data-action="removeGallery">Remove Collection</span>
 		<span class="m-button i-deleteFavourite">Delete Favourites</span>
 	</div>
 	<? endif ?>

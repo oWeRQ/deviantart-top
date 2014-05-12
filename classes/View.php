@@ -6,7 +6,8 @@ class View
 
 	public function __construct($layout = false)
 	{
-		$this->layout = $layout;
+		if ($layout)
+			$this->layout = $layout;
 	}
 
 	public function render($view, $data = null, $return = false)

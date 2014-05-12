@@ -1,5 +1,5 @@
 <? if ($page > 1): ?>
-	<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=$title?>&amp;page=<?=$page-1?>" class="m-button i-showPrev">Show Prev</a>
+	<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=rawurlencode($title)?>&amp;page=<?=$page-1?>" class="m-button i-showPrev">Show Prev</a>
 <? endif ?>
 
 <div class="b-pages">
@@ -18,7 +18,7 @@
 </div>
 
 <? if ($page < $pages): ?>
-	<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=$title?>&amp;page=<?=$page+1?>" class="m-button i-showMore">Show More</a>
+	<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=rawurlencode($title)?>&amp;page=<?=$page+1?>" class="m-button i-showMore">Show More</a>
 <? endif ?>
 
 <? if (IS_ADMIN): ?>
@@ -42,11 +42,10 @@
 	</ul>
 </div>
 
-<div class="b-updateControl">
+<div id="updateControl" class="b-updateControl">
 	<a href="#" class="closeControl closeButton"></a>
-	<form action="updateImage.php" method="post">
+	<form action="." method="post">
 		<input type="hidden" name="action" value="setGalleries">
-		<input type="hidden" name="username" value="">
 		<input type="hidden" name="image_id" value="">
 
 		<h3>Collections</h3>

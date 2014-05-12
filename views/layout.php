@@ -16,6 +16,11 @@
 	<script src="js/jquery.modalWindow.js"></script>
 	<script src="js/jquery.thumbsSlider.js"></script>
 	<script src="js/jquery.gallery.js"></script>
+	<script src="js/jquery.modalGallery.js"></script>
+	<script src="js/jquery.dropmenu.js"></script>
+	<script src="js/jquery.updateControl.js"></script>
+	<script src="js/jquery.imagesBlock.js"></script>
+	<script src="js/jquery.imagesPages.js"></script>
 </head>
 <body>
 

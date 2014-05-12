@@ -2,17 +2,11 @@
 
 require_once 'classes/autoload.php';
 
-$deviantartTop = new DeviantartTopMongo;
-$images = $deviantartTop->getImages();
+$deviantartTop = new DeviantartTop;
 
-$images = array_filter($images, function($image){
-	if (in_array('Abstract', $image['galleries'])) {	
-		//list($width, $height) = getimagesize('images/mythumbs/'.$image['filename']);
-		//if ($width < $height)
-			return true;
-	}
-	return false;
-});
+$images = $deviantartTop->getData('images', [
+	'local.galleries' => ['$in' => ['Abstract']],
+]);
 
 if (isset($_GET['seed']))
 	$seed = $_GET['seed'];
@@ -36,7 +30,7 @@ $images = array_slice($images, 0, 100);
 <head>
 	<meta charset="utf-8">
 	<title>Images Justify</title>
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
 	<script>
 		function ImagesJustify(el){
 			this.init(el);
@@ -134,12 +128,9 @@ $images = array_slice($images, 0, 100);
 		.justify-images li {
 			display: inline-block;
 			vertical-align: top;
-			margin-bottom: 5px;
-			margin-right: 5px;
+			margin-bottom: 4px;
+			margin-right: 4px;
 			margin-left: -0.31em;
-		}
-		.justify-images img {
-			display: block;
 		}
 		.justify-images a {
 			overflow: hidden;
@@ -150,7 +141,10 @@ $images = array_slice($images, 0, 100);
 		}
 		.justify-images a:hover img {
 			position: relative;
-			outline: 5px solid white;
+			outline: 6px solid white;
+		}
+		.justify-images img {
+			display: block;
 		}
 	</style>
 </head>
