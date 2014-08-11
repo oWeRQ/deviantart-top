@@ -88,7 +88,7 @@ $.plugin('imagesPages', {
 
 	scrollShowMoreHandler: function(e) {
 		if (window.scrollY >= window.scrollMaxY-300 && this.showMoreButton.is(':visible')) {
-			$(window).off('scroll', scrollShowMore);
+			$(window).off('scroll', this.scrollShowMoreHandler);
 			this.showMoreButton.click();
 		}
 	},
@@ -96,7 +96,7 @@ $.plugin('imagesPages', {
 	showInGalleryHandler: function(e) {
 		e.preventDefault();
 
-		var link = $(e.target),
+		var link = $(e.target).closest('a'),
 			idx = link.closest('li').index(),
 			modalGallery = this.modalGallery;
 
@@ -183,7 +183,7 @@ $.plugin('imagesPages', {
 			Array.prototype.unshift.call(that.pages, page[0]);
 
 			window.scrollTo(winScrollX, winScrollY);
-			$(window).on('scroll', that.scrollPage).scroll();
+			$(window).on('scroll', that.scrollPageHandler).scroll();
 		});
 	},
 
@@ -222,8 +222,8 @@ $.plugin('imagesPages', {
 			that.pages.push(page[0]);
 
 			window.scrollTo(winScrollX, winScrollY);
-			$(window).on('scroll', that.scrollShowMore);
-			$(window).on('scroll', that.scrollPage).scroll();
+			$(window).on('scroll', that.scrollShowMoreHandler);
+			$(window).on('scroll', that.scrollPageHandler).scroll();
 		});
 	},
 

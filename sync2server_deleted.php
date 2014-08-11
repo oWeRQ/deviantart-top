@@ -11,7 +11,6 @@ $cursor = $deviantartTop->db->images->find([
 	'server_deleted' => false,
 ]);
 
-$userId = 16413375;
 $maxCalls = 1;
 $calls = [];
 
@@ -31,14 +30,14 @@ foreach ($cursor as $image) {
 		$responses = $deviantart->sendCalls($calls, 'post', 1);
 
 		if (!is_array($responses)) {
-			var_dump($responses);
-			die();
+			continue;
 		}
 
 		foreach ($responses as $response) {
 			if ($response['response']['status'] != 'SUCCESS') {	
-				var_dump($response);
-				die();
+				//var_dump($response);
+				//die();
+				continue;
 			}
 
 			$image_id = $response['request']['args'][0];
@@ -56,12 +55,15 @@ foreach ($cursor as $image) {
 					],
 				]);
 			} else {
-				var_dump($response);
-				die();
+				//var_dump($response);
+				//die();
+				continue;
 			}
 		}
 
 		$calls = [];
+
+		sleep(3);
 	}
 }
 $progress->end();

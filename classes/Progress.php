@@ -5,19 +5,25 @@ class Progress
 	protected $total;
 	protected $index;
 	protected $start;
+	protected $update;
 
 	public function __construct($total)
 	{
 		$this->total = $total;
 		$this->index = 0;
 		$this->start = time()-1;
+		$this->update = $this->start;
 	}
 
-	public function step()
+	public function step($force = false)
 	{
 		$this->index++;
+
+		if ($force === false && time() - $this->update < 1)
+			return;
+
+		$this->update = time();
 		$columns = getenv('COLUMNS');
-		//if ($this->index % 100 === 0)
 		$speed = ceil($this->index / (time() - $this->start));
 		$line = "index: ".$this->index."/".$this->total
 			." speed: $speed items/s remain: ".floor(($this->total - $this->index) / $speed / 60)."m"
@@ -27,6 +33,7 @@ class Progress
 
 	public function end()
 	{
+		$this->step(true);
 		echo "\r\n";
 	}
 }

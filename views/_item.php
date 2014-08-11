@@ -1,4 +1,4 @@
-<div class="b-images" data-images-total="<?=$author['favourites']?>" data-images-loaded="<?=$imagesOffset+count($author['images'])?>">
+<div class="b-images" data-username="<?=$author['username']?>" data-images-total="<?=$author['favourites']?>" data-images-loaded="<?=$imagesOffset+count($author['images'])?>">
 	<? if (IS_ADMIN): ?>
 	<div class="b-images-actions">
 		<span class="m-button m-down i-checkAll"><input class="i-checkAll-checkbox" type="checkbox"></span>

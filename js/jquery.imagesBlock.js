@@ -8,12 +8,16 @@ $.plugin('imagesBlock', {
 			deleteButton: '.i-deleteFavourite'
 		}
 	},
+
+	imagesJustify: null,
 	
 	init: function(){
 		var imagesBlock = this;
 
 		this.findAll(this.options.elements);
 		//this.bindAll();
+
+		this.imagesJustify = $.imagesJustify({}, this.imagesList);
 
 		this.galleryButton.click(function(e){
 			e.preventDefault();
@@ -39,6 +43,8 @@ $.plugin('imagesBlock', {
 		this.deleteButton.click(function(e){
 			e.preventDefault();
 
+			var that = this;
+
 			if (!confirm('Delete all selected favourites?'))
 				return;
 
@@ -49,6 +55,8 @@ $.plugin('imagesBlock', {
 				$.each(data.images, function(i, image){
 					$('#image_'+image.id).closest('li').remove();
 				});
+				that.imagesJustify.updateElements();
+				that.imagesJustify.process();
 			}, 'json');
 		});
 
@@ -113,6 +121,7 @@ $.plugin('imagesBlock', {
 			e.preventDefault();
 
 			var link = $(this),
+				username = imagesBlock.$el.data('username'),
 				imagesLoaded = imagesBlock.$el.data('images-loaded');
 				imagesTotal = imagesBlock.$el.data('images-total');
 				isLoading = imagesBlock.$el.data('is-loading');
@@ -125,6 +134,7 @@ $.plugin('imagesBlock', {
 			imagesBlock.$el.data('is-loading', true);
 
 			$.post(window.location.href, {
+				username: username,
 				imagesOffset: imagesLoaded
 			}, function(data){
 				var author = data.authors[0],
@@ -138,6 +148,9 @@ $.plugin('imagesBlock', {
 				imagesBlock.$el.data('images-loaded', imagesLoaded+count);
 
 				$.each(author.images, function(i, image){
+					var img = $('<img>', {
+						src: 'images/mythumbs/'+image.filename
+					});
 					var link = $('<a>', {
 						id: 'image_'+image.id,
 						'class': 'm-showInGallery',
@@ -147,16 +160,14 @@ $.plugin('imagesBlock', {
 						'data-big': image.page,
 						'data-id': image.id,
 						'data-galleries': image.galleries.join(', '),
-						append: $('<img>', {
-							src: 'images/mythumbs/'+image.filename
-						})
+						append: img
 					});
 					var li = $('<li>', {
 						append: [
 							link,
 							$('<a>', {
 								'class': 'm-similar',
-								href: 'm-similar.php?id='+image.id,
+								href: 'similar.php?id='+image.id,
 								target: '_blank'
 							}),
 							$('<a>', {
@@ -167,12 +178,16 @@ $.plugin('imagesBlock', {
 						appendTo: imagesBlock.imagesList
 					});
 
+					imagesBlock.imagesJustify.addImage(img);
+
 					imagesBlock.$el.trigger('addImage', {
 						thumb: link[0].firstElementChild.src,
 						middle: link[0].href,
 						big: link[0].dataset.big
 					});
 				});
+
+				imagesBlock.imagesJustify.process();
 
 				imagesBlock.$el.data('is-loading', null);
 			}, 'json');

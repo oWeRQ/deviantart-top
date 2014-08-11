@@ -66,22 +66,24 @@ foreach ($cursor as $image) {
 	if (count($calls) >= $maxCalls) {
 		$responses = $deviantart->sendCalls($calls, 'post', 1);
 
-		foreach ($responses as $response) {
-			if ($response['request']['method'] == 'add_resource')
-				$image_id = $response['request']['args'][5];
-			elseif ($response['request']['method'] == 'remove_resource')
-				$image_id = $response['request']['args'][4];
-			else
-				continue;
+		if (is_array($responses)) {
+			foreach ($responses as $response) {
+				if ($response['request']['method'] == 'add_resource')
+					$image_id = $response['request']['args'][5];
+				elseif ($response['request']['method'] == 'remove_resource')
+					$image_id = $response['request']['args'][4];
+				else
+					continue;
 
-			if ($response['response']['status'] != 'SUCCESS') {
-				var_dump($response);
-				unset($updates[$image_id]);
+				if ($response['response']['status'] != 'SUCCESS') {
+					var_dump($response);
+					unset($updates[$image_id]);
+				}
 			}
-		}
 
-		foreach ($updates as $image_id => $update) {
-			$deviantartTop->db->images->update(['id' => (string)$image_id], ['$set' => $update]);
+			foreach ($updates as $image_id => $update) {
+				$deviantartTop->db->images->update(['id' => (string)$image_id], ['$set' => $update]);
+			}
 		}
 
 		$calls = [];

@@ -9,7 +9,7 @@ $deviantartTop = new DeviantartTop;
 $username = 'oWeRQ';
 $userid = 16413375;
 $perPage = 24;
-$perRequest = 8;
+$perRequest = 1;
 $trys = 3;
 
 $update_galleries = false;

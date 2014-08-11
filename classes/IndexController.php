@@ -40,8 +40,9 @@ class IndexController extends View
 		$minDevia = (int)Request::param('minDevia', 1);
 		$imagesOffset = (int)Request::param('imagesOffset', 0);
 		$topLimit = (int)Request::param('topLimit', 10);
-		$imagesLimit = (int)Request::param('imagesLimit', 16);
+		$imagesLimit = (int)Request::param('imagesLimit', 20);
 		$sort = (string)Request::param('sort', 'score');
+		$sortTotal = (string)Request::param('sortTotal', 'deviations');
 		$sortDir = (int)Request::param('sortDir', 1);
 		$page = (int)Request::param('page', 1);
 
@@ -86,6 +87,7 @@ class IndexController extends View
 			'topOffset',
 			'topLimit',
 			'sort',
+			'sortTotal',
 			'sortDir'
 		);
 
@@ -108,6 +110,8 @@ class IndexController extends View
 			'imagesLimit' => $imagesLimit,
 			'topLimit' => $topLimit,
 			'sort' => $sort,
+			'sortTotal' => $sortTotal,
+			'sortDir' => $sortDir,
 		]);
 
 		$userLimitsParams = http_build_query([
@@ -117,6 +121,8 @@ class IndexController extends View
 			'imagesLimit' => $imagesLimit * $topLimit,
 			'topLimit' => 1,
 			'sort' => $sort,
+			'sortTotal' => $sortTotal,
+			'sortDir' => $sortDir,
 		]);
 
 		// render
@@ -164,6 +170,7 @@ class IndexController extends View
 				'topLimit',
 				'page',
 				'sort',
+				'sortTotal',
 				'sortDir'
 			), true);
 

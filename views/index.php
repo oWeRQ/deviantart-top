@@ -1,5 +1,7 @@
 <? if ($page > 1): ?>
-	<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=rawurlencode($title)?>&amp;page=<?=$page-1?>" class="m-button i-showPrev">Show Prev</a>
+	<div class="b-pages-head">
+		<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=rawurlencode($title)?>&amp;page=<?=$page-1?>" class="m-button i-showPrev">Show Prev</a>
+	</div>
 <? endif ?>
 
 <div class="b-pages">
@@ -18,7 +20,9 @@
 </div>
 
 <? if ($page < $pages): ?>
-	<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=rawurlencode($title)?>&amp;page=<?=$page+1?>" class="m-button i-showMore">Show More</a>
+	<div class="b-pages-foot">
+		<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=rawurlencode($title)?>&amp;page=<?=$page+1?>" class="m-button i-showMore">Show More</a>
+	</div>
 <? endif ?>
 
 <? if (IS_ADMIN): ?>

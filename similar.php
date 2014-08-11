@@ -12,11 +12,14 @@ $same_galleries = isset($_REQUEST['same_galleries']);
 
 $similar = array();
 
-$images = $deviantartTop->getImages();
 $sigs = [];
-foreach ($deviantartTop->db->images->find([], ['id' => true, 'sig' => true]) as $image) {
+foreach ($deviantartTop->db->images->find(['sig.code' => ['$exists' => true]], ['id' => true, 'sig' => true]) as $image) {
 	$sigs[$image['id']] = $image['sig']['code'];
 }
+
+ini_set('memory_limit', '1G');
+
+$images = $deviantartTop->getImages();
 
 if ($image_id) {
 	$time_start = microtime(true);
