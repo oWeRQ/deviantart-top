@@ -14,14 +14,16 @@ foreach ($deviantartTop->getData('galleries') as $gallery) {
 $cursor = $deviantartTop->db->images->find([
 	'$where' => '(this.local.galleries && this.local.galleries.sort().toString()) != (this.server.galleries && this.server.galleries.sort().toString())',
 	'server_deleted' => false,
+	'server_error' => ['$exists' => false],
 ]);
+$cursorCount = $cursor->count();
 
 $userId = 16413375;
-$maxCalls = 48;
+$maxCalls = min(48, $cursorCount);
 $calls = [];
 $updates = [];
 
-$progress = new Progress($cursor->count());
+$progress = new Progress($cursorCount);
 foreach ($cursor as $image) {
 	$progress->step();
 
@@ -35,11 +37,10 @@ foreach ($cursor as $image) {
 
 	foreach ($addGalleries as $addGallery) {
 		$calls[] = [
-			'object' => 'Aggregations',
+			'object' => 'Gallections',
 			'method' => 'add_resource',
 			'params' => array(
 				$userId,
-				0,
 				21,
 				$galleriesMap[$addGallery],
 				1,
@@ -69,14 +70,15 @@ foreach ($cursor as $image) {
 		if (is_array($responses)) {
 			foreach ($responses as $response) {
 				if ($response['request']['method'] == 'add_resource')
-					$image_id = $response['request']['args'][5];
+					$image_id = $response['request']['args'][4];
 				elseif ($response['request']['method'] == 'remove_resource')
 					$image_id = $response['request']['args'][4];
 				else
 					continue;
 
 				if ($response['response']['status'] != 'SUCCESS') {
-					var_dump($response);
+					//var_dump($response);
+					$deviantartTop->db->images->update(['id' => (string)$image_id], ['$inc' => ['server_error' => 1]]);
 					unset($updates[$image_id]);
 				}
 			}

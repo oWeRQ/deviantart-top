@@ -9,6 +9,7 @@ $deviantartTop = new DeviantartTop;
 $cursor = $deviantartTop->db->images->find([
 	'local_deleted' => ['$ne' => false],
 	'server_deleted' => false,
+	'server_error' => ['$exists' => false],
 ]);
 
 $maxCalls = 1;
@@ -34,13 +35,18 @@ foreach ($cursor as $image) {
 		}
 
 		foreach ($responses as $response) {
+			$image_id = $response['request']['args'][0];
+
 			if ($response['response']['status'] != 'SUCCESS') {	
-				//var_dump($response);
+				$deviantartTop->db->images->update(['id' => $image_id], [
+					'$inc' => [
+						'server_error' => 1,
+					],
+				]);
+				var_dump($response);
 				//die();
 				continue;
 			}
-
-			$image_id = $response['request']['args'][0];
 
 			if ($response['response']['content'] == 'Favourite removed') {
 				$deviantartTop->db->images->update(['id' => $image_id], [
