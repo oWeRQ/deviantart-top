@@ -15,25 +15,33 @@ class Progress
 		$this->update = $this->start;
 	}
 
-	public function step($force = false)
+	public function step()
 	{
 		$this->index++;
 
-		if ($force === false && time() - $this->update < 1)
+		if (time() - $this->update < 1)
 			return;
 
 		$this->update = time();
-		$columns = getenv('COLUMNS');
-		$speed = ceil($this->index / (time() - $this->start));
-		$line = "index: ".$this->index."/".$this->total
-			." speed: $speed items/s remain: ".floor(($this->total - $this->index) / $speed / 60)."m"
-			." mem: ".floor(memory_get_usage() / 1024 / 1024).'M';
-		echo "\r".str_pad($line, $columns);
+
+		$this->display();
 	}
 
 	public function end()
 	{
-		$this->step(true);
+		$this->display();
 		echo "\r\n";
+	}
+
+	public function display()
+	{
+		$columns = getenv('COLUMNS');
+		$speed = ceil($this->index / (time() - $this->start));
+		$remain = $speed > 0 ? floor(($this->total - $this->index) / $speed / 60) : 0;
+		$line = "index: {$this->index}/{$this->total}"
+			." speed: {$speed} items/s"
+			." remain: {$remain}m"
+			." mem: ".floor(memory_get_usage() / 1024 / 1024).'M';
+		echo "\r".str_pad($line, $columns);
 	}
 }

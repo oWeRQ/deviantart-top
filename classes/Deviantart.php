@@ -206,12 +206,10 @@ class Deviantart
 		return false;
 	}
 
-	public function getFavGalleries($user_id, $type = 21)
+	public function getFavGalleries($user_id)
 	{
-		return $this->sendCall("Aggregations", "get_galleries_initial", array(
+		return $this->sendCall("Gallections", "get_collections_for_lub", array(
 			$user_id,
-			$type,
-			1,
 		));
 	}
 
