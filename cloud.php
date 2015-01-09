@@ -11,15 +11,19 @@ $maxSize = 2.25;
 $unit = 'em';
 
 $query = @$_REQUEST['q'];
+$sort = @$_REQUEST['sort'] or $sort = 'name';
 
-$keywords = $deviantartTop->getData('keywords');
+$keywords = $deviantartTop->getData('keywords', [], [
+	'sort' => ['local.count' => -1],
+	'limit' => $count,
+]);
 
-$keywords = array_slice($keywords, 0, $count, true);
+$max = current($keywords)['count'];
+$min = end($keywords)['count'];
 
-$max = count(current($keywords));
-$min = count(end($keywords));
-
-ksort($keywords);
+if ($sort === 'name') {
+	ksort($keywords);
+}
 
 ?><!DOCTYPE html>
 <html>
@@ -28,7 +32,11 @@ ksort($keywords);
 	<title>devianART Cloud</title>
 	<style>
 		html {
-			font: 12pt sans-serif;
+			font: 12px sans-serif;
+		}
+		body {
+			margin: 12px auto;
+			width: 800px;
 		}
 		a {
 			text-decoration: none;
@@ -41,25 +49,29 @@ ksort($keywords);
 			color: #999;
 		}
 		.cloud {
-			margin: 0 auto;
 			padding: 20px;
-			width: 720px;
 			text-align: justify;
 			word-spacing: 8px;
+			font: 12pt sans-serif;
 			background: #f6f6f6;
 		}
 	</style>
 </head>
 <body>
+	<div class="sort">
+		sort:
+		<a href="?sort=name">name</a>
+		| <a href="?sort=count">count</a>
+	</div>
 	<div class="cloud">
 		<?
 		$constant = log($max-$min) / ($maxSize-$minSize);
 		?>
 		<? foreach ($keywords as $keyword => $images): ?>
 			<?
-			$size = log(count($images)-$min) / $constant + $minSize;
+			$size = log($images['count']-$min) / $constant + $minSize;
 			?>
-			<a href=".?title=<?=$keyword?>" target="_blank" title="Count: <?=count($images)?>" class="<?=$keyword===$query?'active':''?>" style="font-size:<?=round($size, 2)?><?=$unit?>"><?=$keyword?></a>
+			<a href=".?title=<?=$keyword?>" target="_blank" title="Count: <?=$images['count']?>" class="<?=$keyword===$query?'active':''?>" style="font-size:<?=round($size, 2)?><?=$unit?>"><?=$keyword?></a>
 		<? endforeach ?>
 	</div>
 </body>
