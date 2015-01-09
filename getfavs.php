@@ -31,6 +31,12 @@ if ($argc > 1) {
 
 $galleries = $deviantart->getFavGalleries($userid);
 
+if (!is_array($galleries)) {
+	echo "Error in getFavGalleries: ";
+	var_dump($galleries);
+	die();
+}
+
 foreach ($galleries as $gallery) {
 	if ($update_galleries && !in_array(strtolower($gallery['title']), $update_galleries))
 		continue;
