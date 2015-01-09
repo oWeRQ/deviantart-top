@@ -29,7 +29,12 @@ class ImageSig
 
 	public function makeSig($filename, $sig_file = null)
 	{
-		$sig = new Imagick($filename);
+		try {
+			$sig = new Imagick($filename);
+		} catch (ImagickException $e) {
+			echo "\nImagickException: ".$e->getMessage().", filename: $filename\n";
+			return null;
+		}
 
 		$sig->scaleImage($this->size, $this->size);
 		$sig->mapImage($this->colormap, false);
