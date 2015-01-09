@@ -156,6 +156,10 @@ input::-moz-focus-inner {
 	text-align: right;
 }
 
+.pull-right {
+	float: right;
+}
+
 .l-sidebar {
 	position: fixed;
 	overflow-x: hidden;

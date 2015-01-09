@@ -37,7 +37,7 @@ class IndexController extends View
 
 		$minFavs = (int)Request::param('minFavs', 1);
 		$maxFavs = (int)Request::param('maxFavs', 0);
-		$minDevia = (int)Request::param('minDevia', 1);
+		$minDevia = (int)Request::param('minDevia', 0);
 		$imagesOffset = (int)Request::param('imagesOffset', 0);
 		$topLimit = (int)Request::param('topLimit', 10);
 		$imagesLimit = (int)Request::param('imagesLimit', 20);
@@ -93,6 +93,7 @@ class IndexController extends View
 
 		$top = $this->deviantartTop->getTop($query, $topQuery);
 
+		$count = $top['count'];
 		$pages = $top['pages'];
 		$authors = $top['authors'];
 
@@ -171,7 +172,8 @@ class IndexController extends View
 				'page',
 				'sort',
 				'sortTotal',
-				'sortDir'
+				'sortDir',
+				'count'
 			), true);
 
 			$this->render('index', compact(

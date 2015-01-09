@@ -232,6 +232,7 @@ class DeviantartTop
 		$top = [];
 
 		if (!empty($topQuery['username'])) {
+			$count = 1;
 			$pages = 1;
 
 			$profile = $this->db->profiles->findOne(['id' => $topQuery['username']]);
@@ -240,29 +241,28 @@ class DeviantartTop
 				$profile = $profile['local'];
 
 				$favourites = $this->getFavImagesCount($topQuery['username'], $query);
-				if ($topQuery['sortTotal'] === 'favourites') {
+				if ($topQuery['sortTotal'] === 'favourites' || !$profile['deviations']) {
 					$deviations = $this->getFavImagesCount($topQuery['username']);
 				} else {
 					$deviations = $profile['deviations'];
 				}
 
 				$top[] = array(
+					'random' => rand(),
 					'username' => $topQuery['username'],
 					'percent' => $favourites / $deviations * 100,
 					'score' => $this->score($favourites, $deviations),
 					'wilson_score' => $this->wilson_score($favourites, $deviations),
 					'favourites' => $favourites,
 					'deviations' => $deviations,
-					'images' => $this->getFavImages($profile['username'], $query, $topQuery['imagesLimit'], $topQuery['imagesOffset']),
+					'images' => $this->getFavImages($topQuery['username'], $query, $topQuery['imagesLimit'], $topQuery['imagesOffset']),
 				);
 			}
 		} else {
 			Profile::begin('DeviantartTop::getTop step1');
 			$profiles = $this->getData('profiles');
 			$authors = $this->getAuthors($query);
-			if ($topQuery['sortTotal'] === 'favourites') {
-				$authorsTotal = array_column($this->getAuthors(), 'images', '_id');
-			}
+			$authorsTotal = array_column($this->getAuthors(), 'images', '_id');
 			Profile::end('DeviantartTop::getTop step1');
 			
 			Profile::begin('DeviantartTop::getTop step2');
@@ -274,10 +274,11 @@ class DeviantartTop
 
 				if (isset($profile['deviations']) && $profile['deviations'] >= $topQuery['minDevia']) {
 					$favourites = $author['images'];
-					$deviations = ($topQuery['sortTotal'] === 'favourites') ? $authorsTotal[$profile['username']] : $profile['deviations'];
+					$deviations = ($topQuery['sortTotal'] === 'favourites' || !$profile['deviations']) ? $authorsTotal[$profile['username']] : $profile['deviations'];
 
 					if ($favourites !== 0 && $favourites >= $topQuery['minFavs'] && ($topQuery['maxFavs'] === 0 || $favourites <= $topQuery['maxFavs'])) {
 						$top[] = array(
+							'random' => rand(),
 							'username' => $profile['username'],
 							'percent' => $favourites / $deviations * 100,
 							'score' => $this->score($favourites, $deviations),
@@ -304,7 +305,8 @@ class DeviantartTop
 			Profile::end('DeviantartTop::getTop step3');
 			
 			Profile::begin('DeviantartTop::getTop step4');
-			$pages = ceil(count($top) / $topQuery['topLimit']);
+			$count = count($top);
+			$pages = ceil($count / $topQuery['topLimit']);
 			$top = array_slice($top, $topQuery['topOffset'], $topQuery['topLimit']);
 			Profile::end('DeviantartTop::getTop step4');
 
@@ -318,6 +320,7 @@ class DeviantartTop
 		Profile::end('DeviantartTop::getTop');
 
 		return [
+			'count' => $count,
 			'pages' => $pages,
 			'authors' => $top,
 		];

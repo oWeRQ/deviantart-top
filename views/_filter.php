@@ -1,4 +1,4 @@
-<form>
+<form id="filterForm" class="b-form b-form_filter">
 	<div class="row">
 		<input type="text" name="title" value="<?=$title?>" placeholder="Search" list="searchList"><a href="#" class="clearInput"></a>
 	</div>
@@ -11,6 +11,7 @@
 				| <a href="#" class="uncheckAll">Uncheck All</a>
 			</div>
 			<? foreach ($galleries as $gallery): ?>
+				<? if (!is_array($gallery)) continue; ?>
 				<input class="exclude" type="checkbox" name="exclude[]" value="<?=$gallery['title']?>"
 					<? if (in_array($gallery['title'], $exclude_galleries)): ?>checked <? endif ?>>
 				<label>
@@ -73,6 +74,7 @@
 					'percent'=>'Percent',
 					'deviations'=>'Total',
 					'favourites'=>'Favourites',
+					'random'=>'Random',
 				) as $value => $name): ?>
 					<option value="<?=$value?>" <?if($value==$sort):?>selected<?endif?>><?=$name?></option>
 				<? endforeach ?>
@@ -103,6 +105,7 @@
 	</div>
 	
 	<div class="row actions">
+		<span class="pull-right">Found: <?=$count?></span>
 		<a href=".">Reset Filter</a>
 	</div>
 </form>
