@@ -19,9 +19,11 @@ $cursor = $deviantartTop->db->images->find([
 $cursorCount = $cursor->count();
 
 $userId = 16413375;
-$maxCalls = min(48, $cursorCount);
+$maxCalls = min(1, $cursorCount);
 $calls = [];
 $updates = [];
+$updateCount = 0;
+$errorImageIds = [];
 
 $progress = new Progress($cursorCount);
 foreach ($cursor as $image) {
@@ -85,6 +87,11 @@ foreach ($cursor as $image) {
 
 			foreach ($updates as $image_id => $update) {
 				$deviantartTop->db->images->update(['id' => (string)$image_id], ['$set' => $update]);
+				$updateCount++;
+			}
+		} else {
+			foreach ($calls as $call) {
+				$errorImageIds[] = $call['params'][4];
 			}
 		}
 
