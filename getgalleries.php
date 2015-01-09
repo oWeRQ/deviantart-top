@@ -6,7 +6,15 @@ Deviantart::$cache_time = 0;
 $deviantart = new Deviantart;
 $deviantartTop = new DeviantartTop;
 
-$galleries = $deviantart->getFavGalleries(16413375);
+$try = 5;
+do {
+	$galleries = $deviantart->getFavGalleries(16413375);
+} while (--$try && $galleries === null);
+
+if (!is_array($galleries) || isset($galleries['error'])) {
+	var_dump($galleries);
+	die();
+}
 
 $date = date('Y-m-d');
 $galleries_history = json_decode(@file_get_contents('data/galleries_history.json'), true);
