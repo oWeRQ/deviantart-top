@@ -11,7 +11,7 @@ $.plugin('gallery', {
 			thumbsLinks: '.thumbs-list a'
 		},
 		thumbsSlider: {},
-		showDuration: 400,
+		showDuration: 600,
 		showLoadingTimeout: 1000,
 		onActivate: $.noop
 	},
@@ -50,7 +50,7 @@ $.plugin('gallery', {
 	imageLoaded: function(){
 		clearTimeout(this.loadingTimeout);
 		this.imageLoader.hide();
-		this.imageCurrent.fadeIn(this.showDuration);
+		this.imageCurrent.fadeIn(this.options.showDuration);
 	},
 	appendImage: function(image){
 		var link = $('<a>', {

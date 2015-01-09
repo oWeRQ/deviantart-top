@@ -72,7 +72,7 @@
 
 			this.container.css({
 				overflow: 'hidden',
-				paddingRight: window.outerWidth-document.documentElement.clientWidth
+				paddingRight: window.innerWidth-document.documentElement.clientWidth
 			});
 
 			this.shim.show();

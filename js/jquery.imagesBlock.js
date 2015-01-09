@@ -43,8 +43,6 @@ $.plugin('imagesBlock', {
 		this.deleteButton.click(function(e){
 			e.preventDefault();
 
-			var that = this;
-
 			if (!confirm('Delete all selected favourites?'))
 				return;
 
@@ -55,8 +53,8 @@ $.plugin('imagesBlock', {
 				$.each(data.images, function(i, image){
 					$('#image_'+image.id).closest('li').remove();
 				});
-				that.imagesJustify.updateElements();
-				that.imagesJustify.process();
+				imagesBlock.imagesJustify.updateElements();
+				imagesBlock.imagesJustify.process();
 			}, 'json');
 		});
 
