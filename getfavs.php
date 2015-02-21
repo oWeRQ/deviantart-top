@@ -74,59 +74,51 @@ foreach ($galleries as $gallery) {
 			$offset += $perPage;
 		}
 
-		for ($try = 0; $try < $trys; $try++) {
-			$requests = $deviantart->sendCalls($calls);
+		$requests = $deviantart->sendCalls($calls, 'get', 10, 3);
 
-			if (!$requests) {
-				sleep(1);
-				continue;
-			}
+		foreach ($requests as $request) {
+			foreach ($request['response']['content']['resources'] as $resource) {
+				$image = $deviantart->parsePageResource($resource);
 
-			foreach ($requests as $request) {
-				foreach ($request['response']['content']['resources'] as $resource) {
-					$image = $deviantart->parsePageResource($resource);
+				if ($image === null || empty($image['id']))
+					continue;
 
-					if ($image === null || empty($image['id']))
-						continue;
+				$mongoImage = $deviantartTop->db->images->findOne(array('id' => $image['id']));
 
-					$mongoImage = $deviantartTop->db->images->findOne(array('id' => $image['id']));
-
-					if ($mongoImage !== null) {
-						if (in_array($gallery['title'], $mongoImage['server']['galleries'])) {
-							$existImagesCount++;
-						} else {
-							$deviantartTop->db->images->update(['_id' => $mongoImage['_id']], [
-								'$set' => [
-									'server_updated' => time(),
-									'server_deleted' => false,
-								],
-								'$addToSet' => [
-									'server.galleries' => $gallery['title'],
-								],
-							]);
-						}
+				if ($mongoImage !== null) {
+					if (in_array($gallery['title'], $mongoImage['server']['galleries'])) {
+						$existImagesCount++;
 					} else {
-						$image['galleries'] = array($gallery['title']);
-
-						$deviantartTop->db->images->insert([
-							'id' => $image['id'],
-							'local' => $image,
-							'local_created' => time(),
-							'local_updated' => time(),
-							'local_deleted' => false,
-							'server' => $image,
-							'server_created' => time(),
-							'server_updated' => time(),
-							'server_deleted' => false,
+						$deviantartTop->db->images->update(['_id' => $mongoImage['_id']], [
+							'$set' => [
+								'server_updated' => time(),
+								'server_deleted' => false,
+							],
+							'$addToSet' => [
+								'server.galleries' => $gallery['title'],
+							],
 						]);
 					}
+				} else {
+					$image['galleries'] = array($gallery['title']);
+
+					$deviantartTop->db->images->insert([
+						'id' => $image['id'],
+						'local' => $image,
+						'local_created' => time(),
+						'local_updated' => time(),
+						'local_deleted' => false,
+						'server' => $image,
+						'server_created' => time(),
+						'server_updated' => time(),
+						'server_deleted' => false,
+					]);
 				}
 			}
-
-			break;
 		}
 
 		//if ($existImagesCount == $perPage * $perRequest)
+
 		if ($existImagesCount >= $perPage)
 			break;
 	}

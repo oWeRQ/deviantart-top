@@ -1,8 +1,6 @@
-<? if ($page > 1): ?>
-	<div class="b-pages-head">
-		<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=rawurlencode($title)?>&amp;page=<?=$page-1?>" class="m-button i-showPrev">Show Prev</a>
-	</div>
-<? endif ?>
+<div class="b-pages-head">
+	<a style="<? if ($page <= 1): ?>display:none<? endif ?>" href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=rawurlencode($title)?>&amp;page=<?=$page-1?>" class="m-button i-showPrev">Show Prev</a>
+</div>
 
 <div class="b-pages">
 	<div id="page_<?=$page?>" class="b-pages-item" data-num="<?=$page?>">
@@ -19,11 +17,9 @@
 	</div>
 </div>
 
-<? if ($page < $pages): ?>
-	<div class="b-pages-foot">
-		<a href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=rawurlencode($title)?>&amp;page=<?=$page+1?>" class="m-button i-showMore">Show More</a>
-	</div>
-<? endif ?>
+<div class="b-pages-foot">
+	<a style="<? if ($page >= $pages): ?>display:none<? endif ?>" href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=rawurlencode($title)?>&amp;page=<?=$page+1?>" class="m-button i-showMore">Show More</a>
+</div>
 
 <? if (IS_ADMIN): ?>
 <div id="checkMenu" class="b-dropmenu">

@@ -10,8 +10,8 @@ class Deviantart
 	public $cookie_file = '../.cookie';
 
 	public static $cache_time = 259200; //3600*24*3
-	//public static $cache_time = 604800; //3600*24*7
 	public static $silent = false;
+	public static $config = null;
 
 	public static function silent($value)
 	{
@@ -41,8 +41,11 @@ class Deviantart
 		if (empty($html))
 			return null;
 
-		if (strpos($html, 'error-deactivated') !== false)
-			return null;
+		if (strpos($html, 'error-deactivated') !== false) {
+			return array(
+				'deactivated' => true,
+			);
+		}
 
 		libxml_use_internal_errors(true);
 		$doc = new DOMDocument();
@@ -89,7 +92,7 @@ class Deviantart
 		), $method, $retry)[0]['response']['content'];
 	}
 
-	public function sendCalls(array $calls, $method = 'get', $retry = 3)
+	public function sendCalls(array $calls, $method = 'get', $retry = 3, $sleep = 1)
 	{
 		$parts = array(
 			'scheme' => 'http',
@@ -126,7 +129,6 @@ class Deviantart
 				if (!self::$silent)
 					echo "fetch: $data_file\n";
 
-				//$data = file_get_contents($url);
 				$data = $this->sendGet($url);
 				if ($data) {
 					@file_put_contents($data_file, $data);
@@ -137,23 +139,17 @@ class Deviantart
 			}
 		}
 
-		/*if (!$data) {
-			echo 'error: no DiFi response;';
-			die();
-		}*/
-
 		$json = json_decode($data, true);
 
-		if ($json['DiFi']['status'] === 'FAIL') {
-			//return array();
+		if ($json['DiFi']['status'] === 'FAIL' || $json['DiFi']['status'] === NULL) {
 			if (--$retry > 0) {
-				echo "retry: $retry\n";
 				@unlink($data_file);
-				return $this->sendCalls($calls, $method, $retry);
+				sleep($sleep);
+				echo "retry: $retry\n";
+				return $this->sendCalls($calls, $method, $retry, $sleep);
 			}
 
-			echo "error: ".$json['DiFi']['response']['error']."; details: ".$json['DiFi']['response']['details'].";\n";
-			die();
+			throw new Exception("error: ".$json['DiFi']['response']['error']."; details: ".$json['DiFi']['response']['details'].";");
 		}
 
 		return $json['DiFi']['response']['calls'];
@@ -161,17 +157,21 @@ class Deviantart
 
 	public function sendGet($url)
 	{
-		$ch = curl_init(); 
-		curl_setopt($ch, CURLOPT_URL, $url);
-		//curl_setopt($ch, CURLOPT_HEADER, 1);
-		curl_setopt($ch, CURLOPT_FAILONERROR, 0);
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-		curl_setopt($ch, CURLOPT_USERAGENT, $this->ua);
-		curl_setopt($ch, CURLOPT_COOKIEJAR, $this->cookie_file);
-		curl_setopt($ch, CURLOPT_COOKIEFILE, $this->cookie_file);
+		$ch = curl_init();
+		curl_setopt_array($ch, array(
+			CURLOPT_URL => $url,
+			CURLOPT_FAILONERROR => 0,
+			CURLOPT_FOLLOWLOCATION => 1,
+			CURLOPT_RETURNTRANSFER => 1,
+			CURLOPT_CONNECTTIMEOUT => 3,
+			CURLOPT_TIMEOUT => 3,
+			CURLOPT_USERAGENT => $this->config('useragent', ''),
+			CURLOPT_COOKIEJAR => $this->cookie_file,
+			CURLOPT_COOKIEFILE => $this->cookie_file,
+		));
+
+		curl_setopt_array($ch, $this->getProxy());
+
 		$result = curl_exec($ch);
 		curl_close($ch);
 		return $result;
@@ -179,22 +179,40 @@ class Deviantart
 
 	public function sendPost($url, $data)
 	{
-		$ch = curl_init(); 
-		curl_setopt($ch, CURLOPT_URL, $url);
-		//curl_setopt($ch, CURLOPT_HEADER, 1);
-		curl_setopt($ch, CURLOPT_FAILONERROR, 1);
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-		curl_setopt($ch, CURLOPT_POST, 1); 
-		curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-		curl_setopt($ch, CURLOPT_USERAGENT, $this->ua);
-		curl_setopt($ch, CURLOPT_COOKIEJAR, $this->cookie_file);
-		curl_setopt($ch, CURLOPT_COOKIEFILE, $this->cookie_file);
+		$ch = curl_init();
+		curl_setopt_array($ch, array(
+			CURLOPT_URL => $url,
+			CURLOPT_FAILONERROR => 1,
+			CURLOPT_FOLLOWLOCATION => 1,
+			CURLOPT_RETURNTRANSFER => 1,
+			CURLOPT_CONNECTTIMEOUT => 3,
+			CURLOPT_TIMEOUT => 3,
+			CURLOPT_POST => 1,
+			CURLOPT_POSTFIELDS => http_build_query($data),
+			CURLOPT_USERAGENT => $this->config('useragent', ''),
+			CURLOPT_COOKIEJAR => $this->cookie_file,
+			CURLOPT_COOKIEFILE => $this->cookie_file,
+		));
+
+		curl_setopt_array($ch, $this->getProxy());
+
 		$result = curl_exec($ch);
 		curl_close($ch);
 		return $result;
+	}
+
+	public function getProxy()
+	{
+		if ($this->config('proxy') === null)
+			return [];
+
+		return [
+			CURLOPT_PROXY => $this->config('proxy.host', 'localhost'),
+			CURLOPT_PROXYPORT => $this->config('proxy.port', '8000'),
+			CURLOPT_PROXYTYPE => CURLPROXY_HTTP,
+			CURLOPT_PROXYAUTH => CURLAUTH_BASIC,
+			CURLOPT_PROXYUSERPWD => $this->config('proxy.user', '').':'.$this->config('proxy.pass', ''),
+		];
 	}
 
 	public function getUserToken()
@@ -288,7 +306,6 @@ class Deviantart
 				preg_match($titleRegex, $html, $titleMatch);
 				preg_match($titlePartsRegex, html_entity_decode($titleMatch[1]), $titlePartsMatch);
 
-				//$imageUrl = str_replace('/150/', '/', $thumbMatch[1]);
 				$thumbPath = parse_url($thumbMatch[1], PHP_URL_PATH);
 				$imageUrl = 'http://fc0'.rand(0, 9).'.deviantart.net'.preg_replace('#^(/\w+)/150/#', '\1/', $thumbPath);
 				$middleUrl = 'http://fc0'.rand(0, 9).'.deviantart.net'.preg_replace('#^(/\w+)/150/#', '\1/300W/', $thumbPath);
@@ -328,11 +345,8 @@ class Deviantart
 
 		$content = $this->getFavPage($user, 0);
 
-		while(true)
-		{
-			//sleep(1);
-			foreach ($content['resources'] as $resource)
-			{
+		while(true) {
+			foreach ($content['resources'] as $resource) {
 				$favs[] = $this->parsePageResource($resource);
 			}
 
@@ -345,6 +359,27 @@ class Deviantart
 
 		return $favs;
 	}
-}
 
-//class Devianart extends Deviantart {}
+	public function getConfig()
+	{
+		if (self::$config === null)
+			return require('configs/deviantart.php');
+
+		return self::$config;
+	}
+
+	public function config($path, $default = null)
+	{
+		$keys = explode('.', $path);
+
+		$head = $this->getConfig();
+        foreach ($keys as $key) {
+            if (isset($head[$key]))
+                $head = &$head[$key];
+            else
+                return $default;
+        }
+
+        return $head;
+	}
+}

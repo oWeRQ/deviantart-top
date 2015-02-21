@@ -19,10 +19,10 @@ class DeviantartTop
 	public function score($pos, $n)
 	{
 		if ($pos > $n)
-			return 0;
+			$pos = $n;
 
 		//return $pos * $pos / $n;
-		return pow($pos, 1.5) * 10 / $n;
+		return pow($pos, 1.35) * 10 / $n;
 	}
 
 	public function wilson_score($pos, $n)

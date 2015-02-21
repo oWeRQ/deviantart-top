@@ -150,6 +150,7 @@ class IndexController extends View
 				'authors',
 				'authorsHtml',
 				'page',
+				'pages',
 				'baseUrl',
 				'prevUrl',
 				'nextUrl'

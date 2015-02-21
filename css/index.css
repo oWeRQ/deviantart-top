@@ -27,7 +27,21 @@ input {
 input[type=text] {
 	-moz-box-sizing: border-box;
 	box-sizing: border-box;
+	margin: 0;
+	padding: 3px;
+	padding-right: 22px;
 	width: 100%;
+	min-height: 2em;
+	font: inherit;
+	color: #444;
+	border: 1px solid #bfbfbf;
+	border-radius: 2px;
+	outline: none;
+}
+input[type=text]:focus {
+	border-color: rgb(77, 144, 254);
+	outline: none;
+	transition: border-color 200ms;
 }
 input[type=checkbox] {
 	margin: 0;
@@ -92,8 +106,8 @@ input::-moz-focus-inner {
 	display: inline-block;
 	vertical-align: top;
 	width: 18px;
-	height: 22px;
-	line-height: 24px;
+	height: 2em;
+	line-height: 2.1em;
 	margin-left: -18px;
 	color: #ccc;
 }
@@ -229,7 +243,7 @@ input::-moz-focus-inner {
 
 .b-pages-head,
 .b-pages-foot {
-	margin: 12px;
+	margin: 6px 12px;
 }
 
 .b-images {

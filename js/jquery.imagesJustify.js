@@ -30,13 +30,13 @@ $.plugin('imagesJustify', {
 
 		this.images.each(function(){
 			if (!this.complete)
-				$(this).load(that.process)
+				$(this).on('load error', that.process)
 		});
 	},
 
 	addImage: function(image){
 		if (!image[0].complete)
-			image.load(this.process);
+			image.on('load error', this.process);
 		this.images.push(image[0]);
 	},
 

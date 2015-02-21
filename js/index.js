@@ -28,8 +28,12 @@ $(function(){
 	$('.b-form-legend').click(function(){
 		$(this).toggleClass('m-open');
 	});
+});
 
-	$('.b-pages').imagesPages({
+$(function(){
+	var pages = $('.b-pages');
+
+	pages.imagesPages({
 		elements: {
 			pages: '.b-pages-item',
 			pageInput: $('.l-sidebar input[name=page]'),
@@ -37,4 +41,20 @@ $(function(){
 			showMoreButton: $('.i-showMore')
 		}
 	});
+
+	/*$('#filterForm').submit(function(e){
+		e.preventDefault();
+
+		$.getJSON('', $(this).serialize(), function(response){
+			var page = $('<div>', {
+				'id': 'page_' + response.page,
+				'class': 'b-pages-item',
+				'data-num': response.page
+			});
+
+			page.html(response.authorsHtml.join(''));
+
+			pages.empty().append(page).imagesPages('init');
+		});
+	});*/
 });

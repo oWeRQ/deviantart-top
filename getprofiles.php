@@ -13,6 +13,13 @@ $start = time();
 $total = count($authors);
 foreach ($authors as $i => $author) {
 	if ($oldProfileRecord = $deviantartTop->db->profiles->findOne(['id' => $author])) {
+		// if ($author == 'janedj') {
+		// 	$profile = $deviantart->userinfo($author);
+		// 	var_dump($oldProfileRecord);
+		// 	var_dump($profile);
+		// 	die();
+		// }
+
 		if (isset($oldProfileRecord['server_deleted']) && $oldProfileRecord['server_deleted'] !== false)
 			continue;
 

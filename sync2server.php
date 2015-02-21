@@ -67,36 +67,48 @@ foreach ($cursor as $image) {
 	}
 
 	if (count($calls) >= $maxCalls) {
-		$responses = $deviantart->sendCalls($calls, 'post', 1);
+		try {
+			$responses = $deviantart->sendCalls($calls, 'post', 3, 1);
 
-		if (is_array($responses)) {
-			foreach ($responses as $response) {
-				if ($response['request']['method'] == 'add_resource')
-					$image_id = $response['request']['args'][4];
-				elseif ($response['request']['method'] == 'remove_resource')
-					$image_id = $response['request']['args'][4];
-				else
-					continue;
+			if (is_array($responses)) {
+				foreach ($responses as $response) {
+					if ($response['request']['method'] == 'add_resource')
+						$image_id = $response['request']['args'][4];
+					elseif ($response['request']['method'] == 'remove_resource')
+						$image_id = $response['request']['args'][4];
+					else
+						continue;
 
-				if ($response['response']['status'] != 'SUCCESS') {
-					//var_dump($response);
-					$deviantartTop->db->images->update(['id' => (string)$image_id], ['$inc' => ['server_error' => 1]]);
-					unset($updates[$image_id]);
+					if ($response['response']['status'] != 'SUCCESS') {
+						//var_dump($response);
+						$deviantartTop->db->images->update(['id' => (string)$image_id], ['$inc' => ['server_error' => 1]]);
+						unset($updates[$image_id]);
+					}
+				}
+
+				foreach ($updates as $image_id => $update) {
+					$deviantartTop->db->images->update(['id' => (string)$image_id], ['$set' => $update]);
+					$updateCount++;
+				}
+			} else {
+				foreach ($calls as $call) {
+					$errorImageIds[] = $call['params'][4];
 				}
 			}
-
-			foreach ($updates as $image_id => $update) {
-				$deviantartTop->db->images->update(['id' => (string)$image_id], ['$set' => $update]);
-				$updateCount++;
-			}
-		} else {
-			foreach ($calls as $call) {
-				$errorImageIds[] = $call['params'][4];
-			}
-		}
+		} catch (Exception $e) {}
 
 		$calls = [];
 		$updates = [];
 	}
 }
 $progress->end();
+
+echo "updated: $updateCount/$cursorCount\n";
+
+/*
+$errorImages = $deviantartTop->db->images->find(['id' => ['$in' => $errorImageIds]]);
+echo "error images: ";
+foreach ($errorImages as $errorImage) {
+	print_r($errorImage);
+}
+*/
