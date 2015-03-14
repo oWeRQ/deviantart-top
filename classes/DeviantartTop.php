@@ -27,6 +27,9 @@ class DeviantartTop
 
 	public function wilson_score($pos, $n)
 	{
+		if ($pos > $n)
+			$pos = $n;
+		
 		$z = 1.64485; //1.0 = 85%, 1.6 = 95%
 		$phat = $pos / $n;
 		return ($phat + $z*$z/(2*$n) - $z*sqrt(($phat*(1-$phat) + $z*$z/(4*$n))/$n)) / (1 + $z*$z/$n);
