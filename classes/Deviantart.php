@@ -288,6 +288,7 @@ class Deviantart
 		$instorageRegex = '#class="instorage"#';
 		$linkRegex = '#<a class="thumb[\s\w-_]*" href="(http://([^.]+)[^"]+)#';
 		$thumbRegex = '#data-src="(http://([^.]+)([^"]+))#';
+		$thumbUrlRegex = '#^http://.*\.deviantart\.net/.*=/fit-in/\d+x\d+/filters:no_upscale\(\):origin\(\)/([^/]*)/(.*)$#';
 		$titleRegex = '#title="([^"]*)#';
 		$titlePartsRegex = '#(.+) by (.)([-\w]+), (\w+ \d+, \d+) in (.+)#u';
 
@@ -307,8 +308,15 @@ class Deviantart
 				preg_match($titlePartsRegex, html_entity_decode($titleMatch[1]), $titlePartsMatch);
 
 				$thumbPath = parse_url($thumbMatch[1], PHP_URL_PATH);
-				$imageUrl = 'http://fc0'.rand(0, 9).'.deviantart.net'.preg_replace('#^(/\w+)/150/#', '\1/', $thumbPath);
-				$middleUrl = 'http://fc0'.rand(0, 9).'.deviantart.net'.preg_replace('#^(/\w+)/150/#', '\1/300W/', $thumbPath);
+
+				if (preg_match($thumbUrlRegex, $thumbPath, $thumbUrlMatch)) {
+					$imageUrl = 'http://'.$thumbUrlMatch[1].'.deviantart.net/'.$thumbUrlMatch[2];
+					$middleUrl = null;
+				} else {
+					$imageUrl = 'http://fc0'.rand(0, 9).'.deviantart.net'.preg_replace('#^(/\w+)/150/#', '\1/', $thumbPath);
+					$middleUrl = 'http://fc0'.rand(0, 9).'.deviantart.net'.preg_replace('#^(/\w+)/150/#', '\1/300W/', $thumbPath);
+				}
+
 				$filename = pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_BASENAME);
 
 				return array(
