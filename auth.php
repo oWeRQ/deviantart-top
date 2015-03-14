@@ -16,6 +16,9 @@ $validate_token = $match[1];
 preg_match('/name="validate_key" value="(\w+)"/', $resp, $match);
 $validate_key = $match[1];
 
+echo "validate_token: $validate_token\n";
+echo "validate_key: $validate_key\n";
+
 sleep(2);
 
 $resp = $deviantart->sendPost('https://www.deviantart.com/users/login', array(
@@ -28,4 +31,11 @@ $resp = $deviantart->sendPost('https://www.deviantart.com/users/login', array(
 	'validate_key' => $validate_key,
 ));
 
-//file_put_contents('auth2.html', $resp);
+if ($resp) {
+	preg_match('/deviantART\.deviant\s*=\s*(\{.*\});/', $resp, $deviantMatch);
+	$deviant = json_decode($deviantMatch[1], true);
+	print_r($deviant);
+	file_put_contents('tmp/auth2.html', $resp);
+} else {
+	echo "auth error\n";
+}
