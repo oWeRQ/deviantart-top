@@ -4,12 +4,12 @@ class Request
 {
 	public static function getUsername()
 	{
-		return $_SERVER['PHP_AUTH_USER'];
+		return isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : 'admin';
 	}
 
 	public static function isAjax()
 	{
-		return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest';
+		return isset($_REQUEST['ajax']) || (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest');
 	}
 
 	public static function param($name, $default = null) {
