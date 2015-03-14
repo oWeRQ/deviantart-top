@@ -2,6 +2,9 @@
 
 class IndexController extends View
 {
+	const ACTION_VIEW = 'view';
+	const ACTION_EDIT = 'edit';
+
 	protected $layout = 'layout';
 	protected $deviantartTop;
 
@@ -10,8 +13,17 @@ class IndexController extends View
 		$this->deviantartTop = new DeviantartTop;
 	}
 
+	public function checkAccess($action = 'view') {
+		if ($action === self::ACTION_EDIT && IS_ADMIN === false) {
+			header("Status: 401 Access Denied");
+			exit();
+		}
+	}
+
 	public function actionIndex()
 	{
+		$this->checkAccess(self::ACTION_VIEW);
+
 		Profile::begin('total');
 		Profile::begin('init');
 
@@ -151,6 +163,7 @@ class IndexController extends View
 				'authorsHtml',
 				'page',
 				'pages',
+				'topOffset',
 				'baseUrl',
 				'prevUrl',
 				'nextUrl'
@@ -199,8 +212,25 @@ class IndexController extends View
 		}
 	}
 
+	public function actionGetGalleries()
+	{
+		$this->checkAccess(self::ACTION_VIEW);
+
+		$galleries = $this->deviantartTop->getData('galleries', [], [
+			'sort' => [
+				'local.position' => 1,
+			],
+		]);
+
+		echo json_encode(array(
+			'galleries' => array_values($galleries),
+		));
+	}
+
 	public function actionSetGalleries()
 	{
+		$this->checkAccess(self::ACTION_EDIT);
+
 		$image_id = (string)Request::param('image_id', 0);
 		$galleries = (array)Request::param('galleries', []);
 
@@ -225,6 +255,8 @@ class IndexController extends View
 
 	public function actionAddGallery()
 	{
+		$this->checkAccess(self::ACTION_EDIT);
+
 		$updateImages = array();
 		$gallery_id = (int)Request::param('gallery', 0);
 		$image_ids = (array)Request::param('images', []);
@@ -260,6 +292,8 @@ class IndexController extends View
 
 	public function actionRemoveGallery()
 	{
+		$this->checkAccess(self::ACTION_EDIT);
+
 		$updateImages = array();
 		$gallery_id = (int)Request::param('gallery', 0);
 		$image_ids = (array)Request::param('images', []);
@@ -295,6 +329,8 @@ class IndexController extends View
 
 	public function actionDeleteFavorites()
 	{
+		$this->checkAccess(self::ACTION_EDIT);
+
 		$updateImages = [];
 		$image_ids = (array)Request::param('images', []);
 
