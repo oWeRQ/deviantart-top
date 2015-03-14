@@ -7,9 +7,15 @@ require_once 'classes/autoload.php';
 define('IS_ADMIN', Request::getUsername() === 'admin');
 define('IS_GUEST', Request::getUsername() === 'guest');
 
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: X-Requested-With');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+	die();
+}
+
 $route = explode('/', Request::param('action', 'index'));
-$controller = count($route) > 1 ? $route[0] : 'index';
-$action = count($route) > 1 ? $route[1] : $route[0];
+list($controller, $action) = (count($route) > 1) ? $route : array('index', $route[0]);
 
 $controllerClass = ucfirst($controller).'Controller';
 $actionMethod = 'action'.ucfirst($action);
