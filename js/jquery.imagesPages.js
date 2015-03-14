@@ -1,6 +1,7 @@
 $.plugin('imagesPages', {
 	defaults: {
 		elements: {
+			pagesList: null,
 			pages: null,
 			pageInput: null,
 			showPrevButton: null,
@@ -176,7 +177,7 @@ $.plugin('imagesPages', {
 			$.each(data.authorsHtml, function(i, authorHtml){
 				page.append(authorHtml);
 			});
-			that.$el.prepend(page);
+			that.pagesList.prepend(page);
 			page.find('.b-images').each(function(){
 				$(this).imagesBlock();
 			});
@@ -215,7 +216,7 @@ $.plugin('imagesPages', {
 			$.each(data.authorsHtml, function(i, authorHtml){
 				page.append(authorHtml);
 			});
-			that.$el.append(page);
+			that.pagesList.append(page);
 			page.find('.b-images').each(function(){
 				$(this).imagesBlock();
 			});

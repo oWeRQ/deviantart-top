@@ -1,0 +1,14 @@
+.b-pages {
+	transition: opacity 500ms;
+}
+.b-pages.m-disabled {
+	pointer-events: none;
+	opacity: .75;
+}
+.b-pages-item {
+	position: relative;
+}
+.b-pages-head,
+.b-pages-foot {
+	margin: 6px 12px;
+}

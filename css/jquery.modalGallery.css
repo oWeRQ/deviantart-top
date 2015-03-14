@@ -1,0 +1,38 @@
+.modal-wrap {
+	padding: 12px;
+}
+.modal-window {
+	padding: 4px;
+	background: #666;
+}
+.modal-window .gallery {
+	margin: 0;
+	width: 900px;
+	background: transparent;
+}
+.modal-window .gallery .image-wrap {
+	height: 605px;
+	background: #333;
+}
+.modal-window .gallery .thumbs-wrap {
+	height: 108px;
+}
+.modal-window .gallery .thumbs-block {
+	background: transparent;
+}
+.modal-window .gallery .thumbs-list {
+	width: 90000px;
+}
+.modal-window .gallery .thumbs-list a img {
+	border-color: #888;
+	border-radius: 2px;
+}
+.modal-window .gallery .thumbs-list a:hover img {
+	border-color: #bbb;
+}
+.modal-window .gallery .thumbs-list a.active img {
+	border-color: white;
+}
+.modal-window .gallery .thumbs-list a.active:before {
+	border-bottom-color: white;
+}

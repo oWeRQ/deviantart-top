@@ -1,0 +1,52 @@
+.l-sidebar + .l-content {
+	margin-left: 192px;
+}
+
+.l-sidebar {
+	overflow-x: hidden;
+	overflow-y: auto;
+	position: fixed;
+	z-index: 10;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	padding: 8px 16px;
+	width: 160px;
+	background: #eee;
+	background-image: linear-gradient(to right, #eee 96%, #ddd);
+}
+.l-sidebar > form {
+	width: 160px;
+}
+.l-sidebar .b-form-legend {
+	margin: 12px 0;
+	margin-right: -16px;
+	font-weight: bold;
+	font-size: 1.17em;
+	color: #666;
+	border-bottom: 3px solid #ddd;
+	cursor: pointer;
+}
+.l-sidebar .b-form-fieldset {
+	display: none;
+}
+.l-sidebar .b-form-legend.m-open + .b-form-fieldset {
+	display: block;
+}
+.l-sidebar input[type=submit] {
+	width: 100%;
+}
+.l-sidebar input.exclude {
+	float: right;
+	margin: 5px 5px 0;
+}
+.l-sidebar input.exclude:checked + label {
+	color: #666;
+	text-decoration: line-through;
+}
+.l-sidebar input.exclude:checked + label input {
+	opacity: .4;
+}
+.l-sidebar select {
+	width: 100%;
+}

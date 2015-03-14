@@ -35,6 +35,7 @@ $(function(){
 
 	pages.imagesPages({
 		elements: {
+			pagesList: '.b-pages-list',
 			pages: '.b-pages-item',
 			pageInput: $('.l-sidebar input[name=page]'),
 			showPrevButton: $('.i-showPrev'),

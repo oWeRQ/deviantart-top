@@ -1,0 +1,37 @@
+.b-select {
+	position: relative;
+	display: inline-block;
+}
+.b-select .b-dropmenu {
+	box-sizing: border-box;
+	display: block;
+	top: 100%;
+	margin-top: -1px;
+	min-width: 100%;
+}
+
+.b-dropmenu {
+	display: none;
+	position: absolute;
+	z-index: 10;
+	margin-top: 9px;
+	background: white;
+	border: 1px solid #999;
+	box-shadow: 0 2px 4px rgba(0,0,0,.5);
+}
+.b-dropmenu ul {
+	margin: 0;
+	padding: 8px 0;
+	list-style: none;
+}
+.b-dropmenu a {
+	display: block;
+	padding: 4px 10px;
+	color: #333;
+	cursor: pointer;
+}
+.b-dropmenu a:focus,
+.b-dropmenu a:hover {
+	color: black;
+	background: #ddd;
+}

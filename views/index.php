@@ -1,24 +1,26 @@
-<div class="b-pages-head">
-	<a style="<? if ($page <= 1): ?>display:none<? endif ?>" href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=rawurlencode($title)?>&amp;page=<?=$page-1?>" class="m-button i-showPrev">Show Prev</a>
-</div>
-
 <div class="b-pages">
-	<div id="page_<?=$page?>" class="b-pages-item" data-num="<?=$page?>">
-		<? foreach ($authors as $i => $author): ?>
-			<? $this->renderPartial('_item', array(
-				'i' => $i,
-				'author' => $author,
-				'imagesOffset' => $imagesOffset,
-				'topOffset' => $topOffset,
-				'galleriesParams' => $galleriesParams,
-				'userLimitsParams' => $userLimitsParams,
-			)); ?>
-		<? endforeach ?>
+	<div class="b-pages-head">
+		<a style="<? if ($page <= 1): ?>display:none<? endif ?>" href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=rawurlencode($title)?>&amp;page=<?=$page-1?>" class="m-button i-showPrev">Show Prev</a>
 	</div>
-</div>
 
-<div class="b-pages-foot">
-	<a style="<? if ($page >= $pages): ?>display:none<? endif ?>" href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=rawurlencode($title)?>&amp;page=<?=$page+1?>" class="m-button i-showMore">Show More</a>
+	<div class="b-pages-list">
+		<div id="page_<?=$page?>" class="b-pages-item" data-num="<?=$page?>">
+			<? foreach ($authors as $i => $author): ?>
+				<? $this->renderPartial('_item', array(
+					'i' => $i,
+					'author' => $author,
+					'imagesOffset' => $imagesOffset,
+					'topOffset' => $topOffset,
+					'galleriesParams' => $galleriesParams,
+					'userLimitsParams' => $userLimitsParams,
+				)); ?>
+			<? endforeach ?>
+		</div>
+	</div>
+
+	<div class="b-pages-foot">
+		<a style="<? if ($page >= $pages): ?>display:none<? endif ?>" href="?<?=$galleriesParams?>&amp;<?=$limitsParams?>&amp;title=<?=rawurlencode($title)?>&amp;page=<?=$page+1?>" class="m-button i-showMore">Show More</a>
+	</div>
 </div>
 
 <? if (IS_ADMIN): ?>

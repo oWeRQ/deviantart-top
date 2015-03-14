@@ -3,12 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<title>deviantART Top</title>
-	<link rel="stylesheet" href="css/jquery.modalWindow.css">
-	<link rel="stylesheet" href="css/jquery.thumbsSlider.css">
-	<link rel="stylesheet" href="css/jquery.gallery.css">
-	<link rel="stylesheet" href="css/gallery.custom.css">
 	<link rel="stylesheet" href="css/index.css">
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 	<script src="js/jquery.plugin.js"></script>
 	<script src="js/jquery.iskey.js"></script>
 	<script src="js/jquery.overlay.js"></script>

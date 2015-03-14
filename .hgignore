@@ -7,3 +7,6 @@ backup/*
 .cookie
 .htaccess
 .htpasswd
+new/
+uitests/
+configs/*.php

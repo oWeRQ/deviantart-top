@@ -1,0 +1,51 @@
+.b-updateControl {
+	display: none;
+	position: absolute;
+	z-index: 10;
+	margin-top: 3px;
+	padding: 8px 16px;
+	min-width: 150px;
+	background: white;
+	border: 1px solid #999;
+	box-shadow: 0 2px 4px rgba(0,0,0,.5);
+}
+.b-updateControl.show {
+	display: block;
+}
+.b-updateControl:before {
+	content: '';
+	position: absolute;
+	top: -18px;
+	left: 4px;
+	border: 9px solid transparent;
+	border-bottom-color: #999; 
+}
+.b-updateControl:after {
+	content: '';
+	position: absolute;
+	top: -16px;
+	left: 5px;
+	border: 8px solid transparent;
+	border-bottom-color: white; 
+}
+.b-updateControl .closeButton {
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	width: 16px;
+	height: 16px;
+	line-height: 16px;
+	text-align: center;
+	color: #999;
+}
+.b-updateControl .closeButton:after {
+	content: '\2716';
+}
+.b-updateControl .checkboxes {
+	-webkit-columns: 2 90px;
+	-moz-columns: 2 90px;
+	columns: 2 90px;
+}
+.b-updateControl .checkboxes label:hover {
+	background: #eee;
+}
